@@ -17,7 +17,10 @@ import type {
 } from "@/lib/supabase/database.types";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase/server";
-import { getSupabaseServiceRoleKey } from "@/lib/supabase/server-config";
+import {
+  getOrderLookupDataSource,
+  getSupabaseServiceRoleKey
+} from "@/lib/supabase/server-config";
 import type { PublicOrderDatabaseRecord, PublicOrderSummary } from "./types";
 
 export type CustomerOrderLookupResult =
@@ -70,7 +73,7 @@ export async function findCustomerOrders(
     return { ok: false, error: "invalid_input" };
   }
 
-  if (!hasServerSupabaseCredentials()) {
+  if (getOrderLookupDataSource() === "mock") {
     return {
       ok: true,
       orders: findMockOrders(normalizedSearch),
@@ -78,10 +81,18 @@ export async function findCustomerOrders(
     };
   }
 
+  if (!hasServerSupabaseCredentials()) {
+    console.error(
+      "Order lookup is configured for Supabase, but required Supabase environment variables are missing."
+    );
+    return { ok: false, error: "lookup_failed" };
+  }
+
   try {
     const orders = await findDatabaseOrders(normalizedSearch);
     return { ok: true, orders, source: "database" };
-  } catch {
+  } catch (error) {
+    logOrderLookupError(error);
     return { ok: false, error: "lookup_failed" };
   }
 }
@@ -90,6 +101,31 @@ function hasServerSupabaseCredentials(): boolean {
   return (
     getSupabasePublicConfig() !== null &&
     getSupabaseServiceRoleKey() !== undefined
+  );
+}
+
+function logOrderLookupError(error: unknown): void {
+  if (isSupabaseLikeError(error)) {
+    console.error("Supabase order lookup failed.", {
+      code: error.code,
+      message: error.message
+    });
+    return;
+  }
+
+  console.error("Order lookup failed.", {
+    message: error instanceof Error ? error.message : "Unknown error"
+  });
+}
+
+function isSupabaseLikeError(
+  error: unknown
+): error is { code?: string; message: string } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof (error as { message?: unknown }).message === "string"
   );
 }
 

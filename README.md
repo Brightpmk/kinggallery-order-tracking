@@ -53,10 +53,13 @@ their own values:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `ORDER_LOOKUP_DATA_SOURCE`
 
-The current app can build without Supabase environment variables. At runtime,
-server-side lookups use Supabase only when the public Supabase values and
-server-only service-role key are configured. Never expose the service-role key in
+The current Phase 3 tracking flow uses mock order data by default. Leave
+`ORDER_LOOKUP_DATA_SOURCE` unset or set it to `mock` in Vercel until the
+Supabase order data is intentionally ready. Set it to `supabase` only when the
+database schema, data, and server-side access model are ready. The app can build
+without Supabase environment variables. Never expose the service-role key in
 client code or public environment variables.
 
 ## Database Migrations
