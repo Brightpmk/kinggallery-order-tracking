@@ -7,11 +7,15 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
   return (
     <div className="app-shell">
+      {/* Decorative silk/drape background layers */}
+      <div className="silk-backdrop" aria-hidden="true" />
+      <div className="silk-sparkle" aria-hidden="true" />
+
       <header className="site-header">
         <div className="site-header__inner">
           <div className="brand" aria-label="Delivery Tracking">
             <span className="brand__name">Delivery Tracking</span>
-            <span className="brand__detail">Small clothing business</span>
+            <span className="brand__detail">KingGallery.Studio</span>
           </div>
           <nav className="site-nav" aria-label="Planned application areas">
             <span>Customer tracking</span>

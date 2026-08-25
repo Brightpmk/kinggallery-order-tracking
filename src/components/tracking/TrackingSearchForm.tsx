@@ -22,7 +22,12 @@ export function TrackingSearchForm() {
     <section className="tracking-workspace" aria-labelledby="tracking-title">
       <div className="tracking-form-panel">
         <p className="eyebrow">Jersey Order Tracking</p>
-        <h1 id="tracking-title">Check your jersey order status</h1>
+        <div className="hero-title-wrapper">
+          <span className="hero-script-accent" aria-hidden="true">
+            Check your status
+          </span>
+          <h1 id="tracking-title">Check your jersey order status</h1>
+        </div>
         <p className="lede">
           Search with the same full name or phone number used when placing the
           jersey order.
