@@ -37,6 +37,7 @@ type MatchedOrderRow = Pick<
   | "order_code"
   | "created_at"
   | "status"
+  | "delivery_method"
   | "tracking_number"
   | "shipping_provider"
   | "customer_name_normalized"
@@ -45,7 +46,14 @@ type MatchedOrderRow = Pick<
 
 type MatchedOrderItemRow = Pick<
   OrderItemRow,
-  "order_id" | "product_name" | "variant" | "size" | "quantity"
+  | "order_id"
+  | "product_name"
+  | "jersey_color"
+  | "jersey_size"
+  | "print_name"
+  | "shirt_number"
+  | "university_abbreviation"
+  | "quantity"
 >;
 
 type MatchedHistoryRow = Pick<
@@ -120,7 +128,7 @@ async function findDatabaseOrders(
   const { data: orderRows, error: ordersError } = await supabase
     .from("orders")
     .select(
-      "id, order_code, created_at, status, tracking_number, shipping_provider, customer_name_normalized, customer_phone_digits"
+      "id, order_code, created_at, status, delivery_method, tracking_number, shipping_provider, customer_name_normalized, customer_phone_digits"
     )
     .eq(column, search.value)
     .order("created_at", { ascending: false })
@@ -141,7 +149,9 @@ async function findDatabaseOrders(
     await Promise.all([
       supabase
         .from("order_items")
-        .select("order_id, product_name, variant, size, quantity")
+        .select(
+          "order_id, product_name, jersey_color, jersey_size, print_name, shirt_number, university_abbreviation, quantity"
+        )
         .in("order_id", orderIds),
       supabase
         .from("order_status_history")
@@ -171,6 +181,7 @@ function buildPublicDatabaseOrders(
       order_code: order.order_code,
       created_at: order.created_at,
       status: order.status,
+      delivery_method: order.delivery_method,
       tracking_number: order.tracking_number,
       shipping_provider: order.shipping_provider,
       order_items: items.filter((item) => item.order_id === order.id),

@@ -17,6 +17,7 @@ export type Database = {
           customer_name_normalized: string;
           customer_phone: string;
           customer_phone_digits: string;
+          delivery_method: Database["public"]["Enums"]["delivery_method"];
           source: Database["public"]["Enums"]["order_source"];
           status: Database["public"]["Enums"]["order_status"];
           tracking_number: string | null;
@@ -31,6 +32,7 @@ export type Database = {
           customer_name_normalized?: never;
           customer_phone: string;
           customer_phone_digits?: never;
+          delivery_method?: Database["public"]["Enums"]["delivery_method"];
           source?: Database["public"]["Enums"]["order_source"];
           status?: Database["public"]["Enums"]["order_status"];
           tracking_number?: string | null;
@@ -45,6 +47,7 @@ export type Database = {
           customer_name_normalized?: never;
           customer_phone?: string;
           customer_phone_digits?: never;
+          delivery_method?: Database["public"]["Enums"]["delivery_method"];
           source?: Database["public"]["Enums"]["order_source"];
           status?: Database["public"]["Enums"]["order_status"];
           tracking_number?: string | null;
@@ -57,34 +60,49 @@ export type Database = {
       order_items: {
         Row: {
           id: string;
+          jersey_color: Database["public"]["Enums"]["jersey_color"] | null;
+          jersey_size: Database["public"]["Enums"]["jersey_size"] | null;
           order_id: string;
+          print_name: string | null;
           product_name: string;
           variant: string | null;
           size: string | null;
+          shirt_number: string | null;
           quantity: number;
           unit_price: number | null;
+          university_abbreviation: string | null;
           currency: string;
           created_at: string;
         };
         Insert: {
           id?: string;
+          jersey_color?: Database["public"]["Enums"]["jersey_color"] | null;
+          jersey_size?: Database["public"]["Enums"]["jersey_size"] | null;
           order_id: string;
+          print_name?: string | null;
           product_name: string;
           variant?: string | null;
           size?: string | null;
+          shirt_number?: string | null;
           quantity: number;
           unit_price?: number | null;
+          university_abbreviation?: string | null;
           currency?: string;
           created_at?: string;
         };
         Update: {
           id?: string;
+          jersey_color?: Database["public"]["Enums"]["jersey_color"] | null;
+          jersey_size?: Database["public"]["Enums"]["jersey_size"] | null;
           order_id?: string;
+          print_name?: string | null;
           product_name?: string;
           variant?: string | null;
           size?: string | null;
+          shirt_number?: string | null;
           quantity?: number;
           unit_price?: number | null;
+          university_abbreviation?: string | null;
           currency?: string;
           created_at?: string;
         };
@@ -134,6 +152,24 @@ export type Database = {
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
+      delivery_method: "pickup" | "shipping";
+      jersey_color:
+        | "CANDY PINK"
+        | "IGNITE RED"
+        | "COPPER ROSE"
+        | "SHADOW BLACK"
+        | "SONIC BLUE"
+        | "AURA GREEN";
+      jersey_size:
+        | "XS"
+        | "S"
+        | "M"
+        | "L"
+        | "XL"
+        | "2XL"
+        | "3XL"
+        | "4XL"
+        | "5XL";
       order_source: "google_form" | "line" | "manual";
       order_status:
         | "pending"

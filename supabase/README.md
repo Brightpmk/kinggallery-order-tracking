@@ -9,6 +9,8 @@ tracking application.
   initial order tracking schema, constraints, indexes, trigger, and RLS posture.
 - `migrations/20260825153000_add_customer_lookup_columns.sql` adds generated
   lookup helpers and indexes for normalized full-name and phone searches.
+- `migrations/20260825163000_add_jersey_order_details.sql` adds controlled
+  jersey color/size values, delivery method, and per-jersey customization fields.
 - `seed.sql` contains fictional development rows only. Run it intentionally in a
   local or disposable development database, not as part of production behavior.
 
