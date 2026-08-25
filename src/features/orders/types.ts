@@ -48,10 +48,18 @@ export type OrderRecord = CustomerPrivateFields & {
   staffNotes?: string;
 };
 
+export type PublicOrderItem = {
+  productName: string;
+  variant: string | null;
+  size: string | null;
+  quantity: number;
+};
+
 export type PublicOrderSummary = {
   orderCode: string;
+  createdAt: string;
   status: OrderStatus;
-  items: OrderItem[];
+  items: PublicOrderItem[];
   trackingNumber?: string;
   shippingProvider?: string;
   timeline: OrderTimelineEvent[];
@@ -60,4 +68,18 @@ export type PublicOrderSummary = {
 export type OrderDatabaseRecord = OrderRow & {
   order_items: OrderItemRow[];
   order_status_history: OrderStatusHistoryRow[];
+};
+
+export type PublicOrderDatabaseRecord = Pick<
+  OrderRow,
+  "order_code" | "created_at" | "status" | "tracking_number" | "shipping_provider"
+> & {
+  order_items: Pick<
+    OrderItemRow,
+    "product_name" | "variant" | "size" | "quantity"
+  >[];
+  order_status_history: Pick<
+    OrderStatusHistoryRow,
+    "status" | "note" | "created_at"
+  >[];
 };

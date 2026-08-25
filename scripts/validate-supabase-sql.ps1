@@ -24,8 +24,13 @@ try {
   & createdb $databaseName
   Write-Host "Creating Supabase-compatible roles..."
   & psql -d $databaseName -v ON_ERROR_STOP=1 -c "create role anon; create role authenticated;" | Out-Null
-  Write-Host "Applying migration..."
-  & psql -d $databaseName -v ON_ERROR_STOP=1 -f (Join-Path $projectRoot "supabase\migrations\20260825143000_create_order_tracking_schema.sql") | Out-Null
+  Write-Host "Applying migrations..."
+  Get-ChildItem -LiteralPath (Join-Path $projectRoot "supabase\migrations") -Filter "*.sql" |
+    Sort-Object Name |
+    ForEach-Object {
+      Write-Host "Applying $($_.Name)..."
+      & psql -d $databaseName -v ON_ERROR_STOP=1 -f $_.FullName | Out-Null
+    }
   Write-Host "Applying development seed data..."
   & psql -d $databaseName -v ON_ERROR_STOP=1 -f (Join-Path $projectRoot "supabase\seed.sql") | Out-Null
 

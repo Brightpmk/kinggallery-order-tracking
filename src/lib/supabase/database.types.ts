@@ -14,7 +14,9 @@ export type Database = {
           id: string;
           order_code: string;
           customer_name: string;
+          customer_name_normalized: string;
           customer_phone: string;
+          customer_phone_digits: string;
           source: Database["public"]["Enums"]["order_source"];
           status: Database["public"]["Enums"]["order_status"];
           tracking_number: string | null;
@@ -26,7 +28,9 @@ export type Database = {
           id?: string;
           order_code: string;
           customer_name: string;
+          customer_name_normalized?: never;
           customer_phone: string;
+          customer_phone_digits?: never;
           source?: Database["public"]["Enums"]["order_source"];
           status?: Database["public"]["Enums"]["order_status"];
           tracking_number?: string | null;
@@ -38,7 +42,9 @@ export type Database = {
           id?: string;
           order_code?: string;
           customer_name?: string;
+          customer_name_normalized?: never;
           customer_phone?: string;
+          customer_phone_digits?: never;
           source?: Database["public"]["Enums"]["order_source"];
           status?: Database["public"]["Enums"]["order_status"];
           tracking_number?: string | null;

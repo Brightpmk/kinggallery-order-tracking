@@ -7,6 +7,8 @@ tracking application.
 
 - `migrations/20260825143000_create_order_tracking_schema.sql` creates the
   initial order tracking schema, constraints, indexes, trigger, and RLS posture.
+- `migrations/20260825153000_add_customer_lookup_columns.sql` adds generated
+  lookup helpers and indexes for normalized full-name and phone searches.
 - `seed.sql` contains fictional development rows only. Run it intentionally in a
   local or disposable development database, not as part of production behavior.
 
