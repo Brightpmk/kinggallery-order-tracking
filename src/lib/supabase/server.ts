@@ -1,9 +1,11 @@
 import "server-only";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { getSupabasePublicConfig, getSupabaseServiceRoleKey } from "./config";
+import { getSupabasePublicConfig } from "./config";
+import type { Database } from "./database.types";
+import { getSupabaseServiceRoleKey } from "./server-config";
 
-export function createSupabaseServerClient(): SupabaseClient {
+export function createSupabaseServerClient(): SupabaseClient<Database> {
   const config = getSupabasePublicConfig();
 
   if (!config) {
@@ -17,7 +19,7 @@ export function createSupabaseServerClient(): SupabaseClient {
   });
 }
 
-export function createSupabaseServiceRoleClient(): SupabaseClient {
+export function createSupabaseServiceRoleClient(): SupabaseClient<Database> {
   const config = getSupabasePublicConfig();
   const serviceRoleKey = getSupabaseServiceRoleKey();
 

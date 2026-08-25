@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <main className="page">
       <section className="intro">
-        <p className="eyebrow">Phase 1 Foundation</p>
+        <p className="eyebrow">Phase 2 Database Foundation</p>
         <h1>Delivery tracking for clothing orders</h1>
         <p className="lede">
           A small production-ready base for customer order tracking, admin order
@@ -23,7 +23,7 @@ export default function Home() {
           <ul>
             <li>Next.js App Router with TypeScript strict mode.</li>
             <li>Order domain types live outside route components.</li>
-            <li>Supabase clients are isolated by browser and server usage.</li>
+            <li>Supabase schema, seed data, and clients are separated.</li>
           </ul>
         </div>
 
@@ -35,8 +35,8 @@ export default function Home() {
               <dd>{mockOrders.length}</dd>
             </div>
             <div>
-              <dt>Sample ID</dt>
-              <dd>{sampleOrder.orderId}</dd>
+              <dt>Sample code</dt>
+              <dd>{sampleOrder.orderCode}</dd>
             </div>
             <div>
               <dt>Public status</dt>

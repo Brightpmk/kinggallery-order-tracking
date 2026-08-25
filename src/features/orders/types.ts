@@ -1,18 +1,26 @@
+import type {
+  OrderItemRow,
+  OrderRow,
+  OrderStatusHistoryRow
+} from "@/lib/supabase/database.types";
+
 export type OrderStatus =
-  | "received"
+  | "pending"
   | "confirmed"
-  | "packing"
+  | "preparing"
   | "shipped"
   | "delivered"
   | "cancelled";
 
-export type OrderChannel = "google_form" | "line" | "manual";
+export type OrderSource = "google_form" | "line" | "manual";
 
 export type OrderItem = {
   productName: string;
-  variantName: string;
-  size: "XS" | "S" | "M" | "L" | "XL" | "Free Size";
+  variant: string | null;
+  size: string | null;
   quantity: number;
+  unitPrice: number | null;
+  currency: string;
 };
 
 export type OrderTimelineEvent = {
@@ -24,29 +32,32 @@ export type OrderTimelineEvent = {
 export type CustomerPrivateFields = {
   customerName: string;
   phoneNumber: string;
-  shippingAddress: string;
-  paymentReference?: string;
 };
 
 export type OrderRecord = CustomerPrivateFields & {
   id: string;
-  orderId: string;
-  channel: OrderChannel;
+  orderCode: string;
+  source: OrderSource;
   createdAt: string;
   updatedAt: string;
   status: OrderStatus;
   items: OrderItem[];
   trackingNumber?: string;
-  carrier?: string;
+  shippingProvider?: string;
   timeline: OrderTimelineEvent[];
   staffNotes?: string;
 };
 
 export type PublicOrderSummary = {
-  orderId: string;
+  orderCode: string;
   status: OrderStatus;
   items: OrderItem[];
   trackingNumber?: string;
-  carrier?: string;
+  shippingProvider?: string;
   timeline: OrderTimelineEvent[];
+};
+
+export type OrderDatabaseRecord = OrderRow & {
+  order_items: OrderItemRow[];
+  order_status_history: OrderStatusHistoryRow[];
 };

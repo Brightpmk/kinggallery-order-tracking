@@ -3,34 +3,36 @@ import type { OrderRecord } from "./types";
 export const mockOrders = [
   {
     id: "ord_001",
-    orderId: "DT-2026-1001",
-    channel: "google_form",
+    orderCode: "DT-2026-1001",
+    source: "google_form",
     createdAt: "2026-08-18T09:15:00.000Z",
     updatedAt: "2026-08-20T11:40:00.000Z",
     status: "shipped",
     customerName: "Maya Chen",
     phoneNumber: "+66 81 000 0101",
-    shippingAddress: "Fictional address, Bangkok 10110",
-    paymentReference: "mock-payment-ref-1001",
     items: [
       {
         productName: "Linen Everyday Shirt",
-        variantName: "Sage",
+        variant: "Sage",
         size: "M",
-        quantity: 1
+        quantity: 1,
+        unitPrice: 890,
+        currency: "THB"
       },
       {
         productName: "Cotton Wide-Leg Pants",
-        variantName: "Black",
+        variant: "Black",
         size: "L",
-        quantity: 1
+        quantity: 1,
+        unitPrice: 1290,
+        currency: "THB"
       }
     ],
-    carrier: "Kerry Express",
+    shippingProvider: "Kerry Express",
     trackingNumber: "KEXMOCK1001001",
     timeline: [
       {
-        status: "received",
+        status: "pending",
         occurredAt: "2026-08-18T09:15:00.000Z",
         note: "Order submitted through the public form."
       },
@@ -40,7 +42,7 @@ export const mockOrders = [
         note: "Payment verified by staff."
       },
       {
-        status: "packing",
+        status: "preparing",
         occurredAt: "2026-08-19T04:30:00.000Z",
         note: "Items prepared for shipment."
       },
@@ -54,25 +56,26 @@ export const mockOrders = [
   },
   {
     id: "ord_002",
-    orderId: "DT-2026-1002",
-    channel: "line",
+    orderCode: "DT-2026-1002",
+    source: "line",
     createdAt: "2026-08-19T14:05:00.000Z",
     updatedAt: "2026-08-21T06:20:00.000Z",
-    status: "packing",
+    status: "preparing",
     customerName: "Anika Patel",
     phoneNumber: "+66 82 000 0202",
-    shippingAddress: "Fictional address, Chiang Mai 50000",
     items: [
       {
         productName: "Ribbed Knit Tank",
-        variantName: "Ivory",
+        variant: "Ivory",
         size: "S",
-        quantity: 2
+        quantity: 2,
+        unitPrice: 490,
+        currency: "THB"
       }
     ],
     timeline: [
       {
-        status: "received",
+        status: "pending",
         occurredAt: "2026-08-19T14:05:00.000Z",
         note: "Manual order entered from chat."
       },
@@ -82,7 +85,7 @@ export const mockOrders = [
         note: "Order details confirmed."
       },
       {
-        status: "packing",
+        status: "preparing",
         occurredAt: "2026-08-21T06:20:00.000Z",
         note: "Order is being packed."
       }
@@ -91,25 +94,26 @@ export const mockOrders = [
   },
   {
     id: "ord_003",
-    orderId: "DT-2026-1003",
-    channel: "manual",
+    orderCode: "DT-2026-1003",
+    source: "manual",
     createdAt: "2026-08-22T02:35:00.000Z",
     updatedAt: "2026-08-22T02:35:00.000Z",
-    status: "received",
+    status: "pending",
     customerName: "Narin Wallace",
     phoneNumber: "+66 83 000 0303",
-    shippingAddress: "Fictional address, Phuket 83000",
     items: [
       {
         productName: "Relaxed Denim Jacket",
-        variantName: "Washed Blue",
+        variant: "Washed Blue",
         size: "Free Size",
-        quantity: 1
+        quantity: 1,
+        unitPrice: 1590,
+        currency: "THB"
       }
     ],
     timeline: [
       {
-        status: "received",
+        status: "pending",
         occurredAt: "2026-08-22T02:35:00.000Z",
         note: "Order created by staff."
       }

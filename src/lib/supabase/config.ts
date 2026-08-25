@@ -18,7 +18,3 @@ export function getSupabasePublicConfig(): SupabasePublicConfig | null {
 
   return { url, anonKey };
 }
-
-export function getSupabaseServiceRoleKey(): string | undefined {
-  return readEnvValue("SUPABASE_SERVICE_ROLE_KEY");
-}

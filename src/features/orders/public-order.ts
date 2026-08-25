@@ -2,10 +2,10 @@ import type { OrderRecord, PublicOrderSummary } from "./types";
 
 export function toPublicOrderSummary(order: OrderRecord): PublicOrderSummary {
   return {
-    orderId: order.orderId,
+    orderCode: order.orderCode,
     status: order.status,
     items: order.items,
-    carrier: order.carrier,
+    shippingProvider: order.shippingProvider,
     trackingNumber: order.trackingNumber,
     timeline: order.timeline
   };
