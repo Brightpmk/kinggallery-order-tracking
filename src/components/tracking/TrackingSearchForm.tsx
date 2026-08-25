@@ -21,11 +21,11 @@ export function TrackingSearchForm() {
   return (
     <section className="tracking-workspace" aria-labelledby="tracking-title">
       <div className="tracking-form-panel">
-        <p className="eyebrow">Customer Order Tracking</p>
-        <h1 id="tracking-title">Check your order status</h1>
+        <p className="eyebrow">Jersey Order Tracking</p>
+        <h1 id="tracking-title">Check your jersey order status</h1>
         <p className="lede">
           Search with the same full name or phone number used when placing the
-          order.
+          jersey order.
         </p>
 
         <form action={formAction} className="tracking-form">

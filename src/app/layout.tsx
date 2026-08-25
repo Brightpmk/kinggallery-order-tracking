@@ -3,8 +3,8 @@ import { AppShell } from "@/components/AppShell";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Customer Order Tracking",
-  description: "Check clothing order status with a customer-safe lookup."
+  title: "Jersey Order Tracking",
+  description: "Check university jersey order status with a customer-safe lookup."
 };
 
 export default function RootLayout({

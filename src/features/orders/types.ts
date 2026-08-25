@@ -17,7 +17,6 @@ export type OrderSource = "google_form" | "line" | "manual";
 
 export type OrderItem = {
   productName: string;
-  variant: string | null;
   jerseyColor: JerseyColor | null;
   jerseySize: JerseySize | null;
   printName: string | null;

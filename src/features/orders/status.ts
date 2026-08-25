@@ -3,7 +3,7 @@ import type { OrderStatus } from "./types";
 export const orderStatusLabels = {
   pending: "Pending confirmation",
   confirmed: "Order confirmed",
-  preparing: "Preparing your order",
+  preparing: "Preparing jersey",
   shipped: "Shipped",
   delivered: "Delivered",
   cancelled: "Cancelled"

@@ -14,7 +14,6 @@ export const mockOrders = [
     items: [
       {
         productName: "University Jersey Shirt",
-        variant: null,
         jerseyColor: "SHADOW BLACK",
         jerseySize: "L",
         printName: "BRIGHT",
@@ -26,7 +25,6 @@ export const mockOrders = [
       },
       {
         productName: "University Jersey Shirt",
-        variant: null,
         jerseyColor: "CANDY PINK",
         jerseySize: "M",
         printName: "POKO",
@@ -69,7 +67,6 @@ export const mockOrders = [
     items: [
       {
         productName: "University Jersey Shirt",
-        variant: null,
         jerseyColor: "SONIC BLUE",
         jerseySize: "XL",
         printName: "JAMIE",
@@ -119,7 +116,6 @@ export const mockOrders = [
     items: [
       {
         productName: "University Jersey Shirt",
-        variant: null,
         jerseyColor: "IGNITE RED",
         jerseySize: "5XL",
         printName: "TAYLOR",
@@ -157,7 +153,6 @@ export const mockOrders = [
     items: [
       {
         productName: "University Jersey Shirt",
-        variant: null,
         jerseyColor: "COPPER ROSE",
         jerseySize: "XS",
         printName: "ALEX",
@@ -212,7 +207,6 @@ export const mockOrders = [
     items: [
       {
         productName: "University Jersey Shirt",
-        variant: null,
         jerseyColor: "AURA GREEN",
         jerseySize: "3XL",
         printName: "CASEY",

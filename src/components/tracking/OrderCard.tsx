@@ -1,4 +1,5 @@
 import type { PublicOrderSummary } from "@/features/orders/types";
+import { getDeliveryMethodLabel } from "@/features/orders/jersey";
 import { OrderItemList } from "./OrderItemList";
 import { OrderStatusBadge } from "./OrderStatusBadge";
 import { OrderTimeline } from "./OrderTimeline";
@@ -19,23 +20,39 @@ export function OrderCard({ order }: OrderCardProps) {
         <OrderStatusBadge status={order.status} />
       </div>
 
-      <OrderItemList items={order.items} />
+      <section className="order-section" aria-label="Jersey details">
+        <h3>Jersey details</h3>
+        <OrderItemList items={order.items} />
+      </section>
 
-      <dl className="delivery-details">
-        <div>
-          <dt>Shipping provider</dt>
-          <dd>{order.shippingProvider ?? "Not available yet"}</dd>
-        </div>
-        <div>
-          <dt>Tracking number</dt>
-          <dd>{order.trackingNumber ?? "Not available yet"}</dd>
-        </div>
-      </dl>
+      <section className="order-section" aria-label="Delivery details">
+        <h3>Delivery</h3>
+        <dl className="delivery-details">
+          <div>
+            <dt>Method</dt>
+            <dd>{getDeliveryMethodLabel(order.deliveryMethod)}</dd>
+          </div>
+          {order.deliveryMethod === "shipping" ? (
+            <>
+              <div>
+                <dt>Shipping provider</dt>
+                <dd>{order.shippingProvider ?? "Provider not available yet"}</dd>
+              </div>
+              <div>
+                <dt>Tracking number</dt>
+                <dd>
+                  {order.trackingNumber ?? "Tracking number not available yet"}
+                </dd>
+              </div>
+            </>
+          ) : null}
+        </dl>
+      </section>
 
-      <div className="timeline-section">
-        <h3>Status timeline</h3>
+      <section className="order-section timeline-section" aria-label="Order status">
+        <h3>Order status</h3>
         <OrderTimeline timeline={order.timeline} />
-      </div>
+      </section>
     </article>
   );
 }

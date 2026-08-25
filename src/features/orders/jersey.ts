@@ -32,6 +32,19 @@ export const deliveryMethodLabels = {
   shipping: "Shipping"
 } satisfies Record<DeliveryMethod, string>;
 
+export const jerseyColorSwatches = {
+  "CANDY PINK": "#f6aac8",
+  "IGNITE RED": "#c8212b",
+  "COPPER ROSE": "#b86f5e",
+  "SHADOW BLACK": "#1e2329",
+  "SONIC BLUE": "#226fd3",
+  "AURA GREEN": "#2d9f6f"
+} satisfies Record<JerseyColor, string>;
+
 export function getDeliveryMethodLabel(method: DeliveryMethod): string {
   return deliveryMethodLabels[method];
+}
+
+export function getJerseyColorSwatch(color: JerseyColor): string {
+  return jerseyColorSwatches[color];
 }
