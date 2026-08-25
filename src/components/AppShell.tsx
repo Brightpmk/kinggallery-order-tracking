@@ -19,8 +19,6 @@ export function AppShell({ children }: AppShellProps) {
           </div>
           <nav className="site-nav" aria-label="Planned application areas">
             <span>Customer tracking</span>
-            <span>Admin orders</span>
-            <span>Forms sync</span>
           </nav>
         </div>
       </header>
