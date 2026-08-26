@@ -2,21 +2,39 @@
 
 import { useActionState, useId, useState } from "react";
 import { searchCustomerOrdersAction } from "@/features/orders/tracking-action";
-import { initialTrackingSearchState } from "@/features/orders/tracking-state";
+import {
+  initialTrackingSearchState,
+  type CustomerSearchType,
+  type TrackingSearchMode
+} from "@/features/orders/tracking-state";
 import { OrderCard } from "./OrderCard";
 
 export function TrackingSearchForm() {
-  const [searchMode, setSearchMode] = useState<"customer" | "jersey">(
-    "customer"
-  );
-  const [customerSearchType, setCustomerSearchType] = useState<"name" | "phone">(
-    "name"
-  );
   const [state, formAction, isPending] = useActionState(
     searchCustomerOrdersAction,
     initialTrackingSearchState
   );
   const currentState = state ?? initialTrackingSearchState;
+  const [searchUiState, setSearchUiState] = useState<{
+    searchMode: TrackingSearchMode;
+    customerSearchType: CustomerSearchType;
+    submissionToken: number;
+  }>({
+    searchMode: currentState.searchMode,
+    customerSearchType: currentState.customerSearchType,
+    submissionToken: currentState.submissionToken
+  });
+
+  if (searchUiState.submissionToken !== currentState.submissionToken) {
+    setSearchUiState({
+      searchMode: currentState.searchMode,
+      customerSearchType: currentState.customerSearchType,
+      submissionToken: currentState.submissionToken
+    });
+  }
+
+  const searchMode = searchUiState.searchMode;
+  const customerSearchType = searchUiState.customerSearchType;
   const currentOrders = currentState.orders ?? [];
   const currentStatus = currentState.status ?? "idle";
   const currentMessage = currentState.message ?? null;
@@ -47,7 +65,12 @@ export function TrackingSearchForm() {
               <input
                 checked={searchMode === "customer"}
                 name="searchMode"
-                onChange={() => setSearchMode("customer")}
+                onChange={() =>
+                  setSearchUiState((previousState) => ({
+                    ...previousState,
+                    searchMode: "customer"
+                  }))
+                }
                 type="radio"
                 value="customer"
               />
@@ -57,7 +80,12 @@ export function TrackingSearchForm() {
               <input
                 checked={searchMode === "jersey"}
                 name="searchMode"
-                onChange={() => setSearchMode("jersey")}
+                onChange={() =>
+                  setSearchUiState((previousState) => ({
+                    ...previousState,
+                    searchMode: "jersey"
+                  }))
+                }
                 type="radio"
                 value="jersey"
               />
@@ -73,7 +101,12 @@ export function TrackingSearchForm() {
                   <input
                     checked={customerSearchType === "name"}
                     name="customerSearchType"
-                    onChange={() => setCustomerSearchType("name")}
+                    onChange={() =>
+                      setSearchUiState((previousState) => ({
+                        ...previousState,
+                        customerSearchType: "name"
+                      }))
+                    }
                     type="radio"
                     value="name"
                   />
@@ -83,7 +116,12 @@ export function TrackingSearchForm() {
                   <input
                     checked={customerSearchType === "phone"}
                     name="customerSearchType"
-                    onChange={() => setCustomerSearchType("phone")}
+                    onChange={() =>
+                      setSearchUiState((previousState) => ({
+                        ...previousState,
+                        customerSearchType: "phone"
+                      }))
+                    }
                     type="radio"
                     value="phone"
                   />
