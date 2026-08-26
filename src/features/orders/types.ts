@@ -1,8 +1,3 @@
-import type {
-  OrderItemRow,
-  OrderRow,
-  OrderStatusHistoryRow
-} from "@/lib/supabase/database.types";
 import type { DeliveryMethod, JerseyColor, JerseySize } from "./jersey";
 
 export type OrderStatus =
@@ -72,34 +67,4 @@ export type PublicOrderSummary = {
   trackingNumber?: string;
   shippingProvider?: string;
   timeline: OrderTimelineEvent[];
-};
-
-export type OrderDatabaseRecord = OrderRow & {
-  order_items: OrderItemRow[];
-  order_status_history: OrderStatusHistoryRow[];
-};
-
-export type PublicOrderDatabaseRecord = Pick<
-  OrderRow,
-  | "order_code"
-  | "created_at"
-  | "status"
-  | "delivery_method"
-  | "tracking_number"
-  | "shipping_provider"
-> & {
-  order_items: Pick<
-    OrderItemRow,
-    | "product_name"
-    | "jersey_color"
-    | "jersey_size"
-    | "print_name"
-    | "shirt_number"
-    | "university_abbreviation"
-    | "quantity"
-  >[];
-  order_status_history: Pick<
-    OrderStatusHistoryRow,
-    "status" | "note" | "created_at"
-  >[];
 };

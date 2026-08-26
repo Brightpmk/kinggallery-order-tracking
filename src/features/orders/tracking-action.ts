@@ -1,18 +1,36 @@
 "use server";
 
 import { findCustomerOrders } from "./customer-order-lookup";
-import { normalizePhoneNumber } from "./search-normalization";
+import {
+  normalizeJerseyNumber,
+  normalizePhoneNumber,
+  normalizePrintedName
+} from "./search-normalization";
 import type { TrackingSearchState } from "./tracking-state";
 
 export async function searchCustomerOrdersAction(
   _previousState: TrackingSearchState,
   formData: FormData
 ): Promise<TrackingSearchState> {
-  const searchType = formData.get("searchType");
-  const query = formData.get("query");
+  const searchMode = formData.get("searchMode");
+
+  if (searchMode === "customer") {
+    return searchByCustomer(formData);
+  }
+
+  if (searchMode === "jersey") {
+    return searchByJersey(formData);
+  }
+
+  return invalidSearchState("Choose how you want to search.");
+}
+
+async function searchByCustomer(formData: FormData): Promise<TrackingSearchState> {
+  const searchType = formData.get("customerSearchType");
+  const query = formData.get("customerQuery");
 
   if (searchType !== "name" && searchType !== "phone") {
-    return invalidSearchState("Choose how you want to search.");
+    return invalidSearchState("Choose full name or phone number.");
   }
 
   if (typeof query !== "string" || query.trim() === "") {
@@ -23,16 +41,43 @@ export async function searchCustomerOrdersAction(
     return invalidSearchState("Enter a complete phone number.");
   }
 
-  // Phase 3 intentionally allows name-or-phone lookup for convenience.
-  // Future phases should strengthen verification before exposing order details.
   const result = await findCustomerOrders({
+    mode: "customer",
     type: searchType,
     value: query
   });
 
+  return toTrackingSearchState(result);
+}
+
+async function searchByJersey(formData: FormData): Promise<TrackingSearchState> {
+  const printName = formData.get("printName");
+  const shirtNumber = formData.get("shirtNumber");
+
+  if (
+    typeof printName !== "string" ||
+    normalizePrintedName(printName) === "" ||
+    typeof shirtNumber !== "string" ||
+    normalizeJerseyNumber(shirtNumber) === ""
+  ) {
+    return invalidSearchState("Enter both printed name and jersey number.");
+  }
+
+  const result = await findCustomerOrders({
+    mode: "jersey",
+    printName,
+    shirtNumber
+  });
+
+  return toTrackingSearchState(result);
+}
+
+function toTrackingSearchState(
+  result: Awaited<ReturnType<typeof findCustomerOrders>>
+): TrackingSearchState {
   if (!result.ok) {
     return result.error === "invalid_input"
-      ? invalidSearchState("Enter a full name or phone number.")
+      ? invalidSearchState("Check your search details and try again.")
       : {
           status: "error",
           message:

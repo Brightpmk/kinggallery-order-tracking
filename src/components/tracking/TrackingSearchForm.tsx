@@ -6,7 +6,12 @@ import { initialTrackingSearchState } from "@/features/orders/tracking-state";
 import { OrderCard } from "./OrderCard";
 
 export function TrackingSearchForm() {
-  const [searchType, setSearchType] = useState<"name" | "phone">("name");
+  const [searchMode, setSearchMode] = useState<"customer" | "jersey">(
+    "customer"
+  );
+  const [customerSearchType, setCustomerSearchType] = useState<"name" | "phone">(
+    "name"
+  );
   const [state, formAction, isPending] = useActionState(
     searchCustomerOrdersAction,
     initialTrackingSearchState
@@ -15,7 +20,9 @@ export function TrackingSearchForm() {
   const currentOrders = currentState.orders ?? [];
   const currentStatus = currentState.status ?? "idle";
   const currentMessage = currentState.message ?? null;
-  const inputId = useId();
+  const customerInputId = useId();
+  const printNameInputId = useId();
+  const shirtNumberInputId = useId();
   const messageId = useId();
 
   return (
@@ -29,48 +36,110 @@ export function TrackingSearchForm() {
           <h1 id="tracking-title">Check your jersey order status</h1>
         </div>
         <p className="lede">
-          Search with the same full name or phone number used when placing the
-          jersey order.
+          Search by customer details, or find one jersey with the printed name
+          and number.
         </p>
 
         <form action={formAction} className="tracking-form">
           <fieldset>
-            <legend>Search by</legend>
+            <legend>Mode</legend>
             <label>
               <input
-                checked={searchType === "name"}
-                name="searchType"
-                onChange={() => setSearchType("name")}
+                checked={searchMode === "customer"}
+                name="searchMode"
+                onChange={() => setSearchMode("customer")}
                 type="radio"
-                value="name"
+                value="customer"
               />
-              Full name
+              Customer
             </label>
             <label>
               <input
-                checked={searchType === "phone"}
-                name="searchType"
-                onChange={() => setSearchType("phone")}
+                checked={searchMode === "jersey"}
+                name="searchMode"
+                onChange={() => setSearchMode("jersey")}
                 type="radio"
-                value="phone"
+                value="jersey"
               />
-              Phone number
+              Jersey
             </label>
           </fieldset>
 
-          <label className="search-field" htmlFor={inputId}>
-            {searchType === "name" ? "Full name" : "Phone number"}
-          </label>
-          <input
-            aria-describedby={currentMessage ? messageId : undefined}
-            autoComplete={searchType === "name" ? "name" : "tel"}
-            id={inputId}
-            name="query"
-            placeholder={
-              searchType === "name" ? "Alex Sample" : "+66 80 000 1001"
-            }
-            type={searchType === "name" ? "text" : "tel"}
-          />
+          {searchMode === "customer" ? (
+            <>
+              <fieldset>
+                <legend>Customer search</legend>
+                <label>
+                  <input
+                    checked={customerSearchType === "name"}
+                    name="customerSearchType"
+                    onChange={() => setCustomerSearchType("name")}
+                    type="radio"
+                    value="name"
+                  />
+                  Full name
+                </label>
+                <label>
+                  <input
+                    checked={customerSearchType === "phone"}
+                    name="customerSearchType"
+                    onChange={() => setCustomerSearchType("phone")}
+                    type="radio"
+                    value="phone"
+                  />
+                  Phone number
+                </label>
+              </fieldset>
+
+              <label className="search-field" htmlFor={customerInputId}>
+                {customerSearchType === "name" ? "Full name" : "Phone number"}
+              </label>
+              <input
+                aria-describedby={currentMessage ? messageId : undefined}
+                autoComplete={customerSearchType === "name" ? "name" : "tel"}
+                className="tracking-input"
+                id={customerInputId}
+                name="customerQuery"
+                placeholder={
+                  customerSearchType === "name"
+                    ? "Alex Sample"
+                    : "+66 80 000 1001"
+                }
+                type={customerSearchType === "name" ? "text" : "tel"}
+              />
+            </>
+          ) : (
+            <div className="jersey-search-fields">
+              <div>
+                <label className="search-field" htmlFor={printNameInputId}>
+                  Printed name
+                </label>
+                <input
+                  aria-describedby={currentMessage ? messageId : undefined}
+                  autoComplete="off"
+                  className="tracking-input"
+                  id={printNameInputId}
+                  name="printName"
+                  placeholder="BRIGHT"
+                  type="text"
+                />
+              </div>
+              <div>
+                <label className="search-field" htmlFor={shirtNumberInputId}>
+                  Jersey number
+                </label>
+                <input
+                  aria-describedby={currentMessage ? messageId : undefined}
+                  autoComplete="off"
+                  className="tracking-input"
+                  id={shirtNumberInputId}
+                  name="shirtNumber"
+                  placeholder="67"
+                  type="text"
+                />
+              </div>
+            </div>
+          )}
 
           <button disabled={isPending} type="submit">
             {isPending ? "Checking..." : "Check Order Status"}
@@ -96,8 +165,8 @@ export function TrackingSearchForm() {
           </div>
         ) : null}
 
-        {currentOrders.map((order) => (
-          <OrderCard key={order.orderCode} order={order} />
+        {currentOrders.map((order, index) => (
+          <OrderCard key={`${order.orderCode}-${index}`} order={order} />
         ))}
       </div>
     </section>

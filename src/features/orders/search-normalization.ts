@@ -8,6 +8,18 @@ export type CustomerOrderSearchInput =
       value: string;
     };
 
+export type JerseyOrderSearchInput = {
+  mode: "jersey";
+  printName: string;
+  shirtNumber: string;
+};
+
+export type TrackingSearchInput =
+  | ({
+      mode: "customer";
+    } & CustomerOrderSearchInput)
+  | JerseyOrderSearchInput;
+
 export type NormalizedCustomerOrderSearch =
   | {
       type: "name";
@@ -18,12 +30,30 @@ export type NormalizedCustomerOrderSearch =
       value: string;
     };
 
+export type NormalizedTrackingSearch =
+  | ({
+      mode: "customer";
+    } & NormalizedCustomerOrderSearch)
+  | {
+      mode: "jersey";
+      printName: string;
+      shirtNumber: string;
+    };
+
 export function normalizeFullName(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
 export function normalizePhoneNumber(value: string): string {
-  return value.replace(/\D/g, "");
+  return normalizeSpreadsheetIdentifier(value).replace(/\D/g, "");
+}
+
+export function normalizePrintedName(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+export function normalizeJerseyNumber(value: string): string {
+  return normalizeSpreadsheetIdentifier(value).trim();
 }
 
 export function normalizeCustomerOrderSearch(
@@ -40,4 +70,8 @@ export function normalizeCustomerOrderSearch(
   return normalizedPhone === ""
     ? null
     : { type: "phone", value: normalizedPhone };
+}
+
+function normalizeSpreadsheetIdentifier(value: string): string {
+  return value.replace(/^\s+|\s+$/g, "").replace(/\.0+$/, "");
 }

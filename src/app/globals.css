@@ -518,7 +518,7 @@ h3 {
   accent-color: var(--accent);
 }
 
-.tracking-form input[name="query"] {
+.tracking-input {
   width: 100%;
   min-height: 52px;
   padding: 14px 18px;
@@ -532,16 +532,28 @@ h3 {
   transition: all var(--transition-base);
 }
 
-.tracking-form input[name="query"]::placeholder {
+.tracking-input::placeholder {
   color: rgba(122, 106, 96, 0.5);
   font-style: italic;
 }
 
-.tracking-form input[name="query"]:focus {
+.tracking-input:focus {
   border-color: var(--gold);
   outline: none;
   box-shadow: 0 0 0 3px var(--gold-soft);
   background: rgba(250, 245, 240, 0.85);
+}
+
+.jersey-search-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(110px, 0.45fr);
+  gap: 14px;
+}
+
+.jersey-search-fields div {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
 }
 
 .tracking-form button {
@@ -968,7 +980,8 @@ h3 {
 
   .tracking-workspace,
   .delivery-details,
-  .jersey-details {
+  .jersey-details,
+  .jersey-search-fields {
     grid-template-columns: 1fr;
   }
 

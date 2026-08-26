@@ -1,7 +1,7 @@
 # Delivery Tracking
 
-Next.js, TypeScript, and Supabase order tracking application for a small jersey
-business.
+Next.js, TypeScript, and Google Sheets order tracking application for a small
+jersey business.
 
 ## Development
 
@@ -27,8 +27,8 @@ The CI workflow uses `npm ci` and runs:
 - `npm test`, only if a real `test` script exists
 - `npm run build`
 
-There is currently no committed automated test suite, so CI skips the test step
-until a real test script is added.
+The committed test suite covers Google Form normalization, multi-jersey parsing,
+public response safety, and customer/jersey search behavior.
 
 ## Vercel Deployment
 
@@ -50,24 +50,39 @@ Use placeholders only in `.env.example`. Do not commit real secrets.
 Local development, Vercel Preview, and Vercel Production should each configure
 their own values:
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `ORDER_LOOKUP_DATA_SOURCE`
+- `GOOGLE_SHEETS_SPREADSHEET_ID`
+- `GOOGLE_SHEETS_FORM_RESPONSES_RANGE`
+- `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+- `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
+- `GOOGLE_SHEETS_CACHE_TTL_SECONDS`
 
-The current Phase 3 tracking flow uses mock order data by default. Leave
-`ORDER_LOOKUP_DATA_SOURCE` unset or set it to `mock` in Vercel until the
-Supabase order data is intentionally ready. Set it to `supabase` only when the
-database schema, data, and server-side access model are ready. The app can build
-without Supabase environment variables. Never expose the service-role key in
-client code or public environment variables.
+The app can build without Google credentials, but production order lookup needs
+the server-only Google Sheets variables above. Never create `NEXT_PUBLIC_*`
+Google credential variables.
 
-## Database Migrations
+`GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` may be configured with literal newlines in
+`.env.local` or escaped `\n` sequences in Vercel. The server normalizes both
+forms before authenticating.
 
-Supabase migrations are version-controlled under `supabase/migrations`.
-Production database migrations are not run automatically by CI. Review and apply
-database changes manually or through a separate, explicitly approved migration
-process.
+## Google Sheets Setup
+
+1. Create or choose a Google Cloud project.
+2. Enable the Google Sheets API for that project.
+3. Create a service account and generate a JSON key.
+4. Copy the service account `client_email` into
+   `GOOGLE_SERVICE_ACCOUNT_EMAIL`.
+5. Copy the private key into `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`.
+6. Share the private Google Form response Sheet with the service account email
+   as a viewer.
+7. Set `GOOGLE_SHEETS_SPREADSHEET_ID` to the Sheet ID from the URL.
+8. Keep `GOOGLE_SHEETS_FORM_RESPONSES_RANGE` pointed at the form response tab,
+   for example `"'การตอบแบบฟอร์ม 1'!A:U"`.
+9. Add the same variables to Vercel Preview and Production environments.
+
+The current Sheet does not provide reliable shipping provider, tracking number,
+or detailed order status columns. The customer UI therefore shows only the real
+order receipt timestamp plus normalized pickup/shipping method and leaves
+tracking fields unavailable until those columns exist.
 
 ## Branch Protection
 
