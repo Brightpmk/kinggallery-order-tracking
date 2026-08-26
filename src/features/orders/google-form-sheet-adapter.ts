@@ -319,14 +319,91 @@ function parseSheetTimestamp(value: string): string | null {
     return null;
   }
 
-  const isoLikeValue = value.replace(" ", "T").replace(/(\.\d{3})\d+$/, "$1");
-  const parsedDate = new Date(isoLikeValue);
+  const localDateParts = parseLocalSheetTimestamp(value);
+
+  if (localDateParts) {
+    return toBangkokIsoTimestamp(localDateParts);
+  }
+
+  const parsedDate = new Date(value);
 
   if (Number.isNaN(parsedDate.getTime())) {
     return null;
   }
 
   return parsedDate.toISOString();
+}
+
+function parseLocalSheetTimestamp(value: string): {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+  millisecond: number;
+} | null {
+  const normalizedValue = value.trim();
+  const dayFirstMatch = normalizedValue.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?$/
+  );
+
+  if (dayFirstMatch) {
+    return {
+      day: Number.parseInt(dayFirstMatch[1], 10),
+      month: Number.parseInt(dayFirstMatch[2], 10),
+      year: Number.parseInt(dayFirstMatch[3], 10),
+      hour: Number.parseInt(dayFirstMatch[4], 10),
+      minute: Number.parseInt(dayFirstMatch[5], 10),
+      second: Number.parseInt(dayFirstMatch[6] ?? "0", 10),
+      millisecond: 0
+    };
+  }
+
+  const yearFirstMatch = normalizedValue.match(
+    /^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?$/
+  );
+
+  if (!yearFirstMatch) {
+    return null;
+  }
+
+  return {
+    year: Number.parseInt(yearFirstMatch[1], 10),
+    month: Number.parseInt(yearFirstMatch[2], 10),
+    day: Number.parseInt(yearFirstMatch[3], 10),
+    hour: Number.parseInt(yearFirstMatch[4], 10),
+    minute: Number.parseInt(yearFirstMatch[5], 10),
+    second: Number.parseInt(yearFirstMatch[6] ?? "0", 10),
+    millisecond: Number.parseInt((yearFirstMatch[7] ?? "0").slice(0, 3), 10)
+  };
+}
+
+function toBangkokIsoTimestamp(parts: {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+  millisecond: number;
+}): string | null {
+  const bangkokUtcOffsetHours = 7;
+  const timestamp = Date.UTC(
+    parts.year,
+    parts.month - 1,
+    parts.day,
+    parts.hour - bangkokUtcOffsetHours,
+    parts.minute,
+    parts.second,
+    parts.millisecond
+  );
+
+  if (Number.isNaN(timestamp)) {
+    return null;
+  }
+
+  return new Date(timestamp).toISOString();
 }
 
 function createOrderId(

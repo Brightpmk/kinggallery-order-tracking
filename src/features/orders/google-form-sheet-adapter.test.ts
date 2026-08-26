@@ -67,6 +67,17 @@ describe("Google Form Sheet adapter", () => {
     ]);
   });
 
+  it("parses Google Sheets API day-first formatted timestamps", () => {
+    const rows = buildRows();
+    rows[1][0] = "20/7/2026, 19:09:08";
+
+    const { orders, diagnostics } = adaptGoogleFormSheetRows(rows);
+
+    expect(diagnostics.skippedRows).toBe(0);
+    expect(orders).toHaveLength(1);
+    expect(orders[0].createdAt).toBe("2026-07-20T12:09:08.000Z");
+  });
+
   it("does not duplicate the first jersey when repeated in the multi-jersey field", () => {
     const { orders } = adaptGoogleFormSheetRows(
       buildRows(
