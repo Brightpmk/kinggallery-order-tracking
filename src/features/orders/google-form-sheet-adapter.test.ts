@@ -149,4 +149,16 @@ describe("Google Form Sheet adapter", () => {
     expect(JSON.stringify(result)).not.toContain("full private shipping address");
     expect(JSON.stringify(result)).not.toContain("0960969594");
   });
+
+  it("does not expose public order status fields for old Google Form rows", () => {
+    const { orders } = adaptGoogleFormSheetRows(buildRows());
+    const result = searchJerseyOrders(orders, {
+      printName: "BRIGHT",
+      shirtNumber: "07"
+    });
+
+    expect(result).toHaveLength(1);
+    expect(Object.hasOwn(result[0], "status")).toBe(false);
+    expect(Object.hasOwn(result[0], "timeline")).toBe(false);
+  });
 });

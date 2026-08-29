@@ -91,15 +91,7 @@ export function adaptGoogleFormSheetRows(rows: SheetRow[]): GoogleFormAdapterRes
       deliveryMethod: normalizeDeliveryMethod(row[columns.delivery]),
       createdAt,
       updatedAt: createdAt,
-      status: "pending",
-      items,
-      timeline: [
-        {
-          status: "pending",
-          occurredAt: createdAt,
-          note: "Order received."
-        }
-      ]
+      items
     });
   });
 

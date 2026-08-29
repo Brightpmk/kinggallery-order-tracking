@@ -1,13 +1,5 @@
 import type { DeliveryMethod, JerseyColor, JerseySize } from "./jersey";
 
-export type OrderStatus =
-  | "pending"
-  | "confirmed"
-  | "preparing"
-  | "shipped"
-  | "delivered"
-  | "cancelled";
-
 export type OrderSource = "google_form" | "line" | "manual";
 
 export type PaymentStatus = "paid" | "unpaid";
@@ -25,12 +17,6 @@ export type OrderItem = {
   currency: string;
 };
 
-export type OrderTimelineEvent = {
-  status: OrderStatus;
-  occurredAt: string;
-  note: string;
-};
-
 export type OrderRecord = {
   id: string;
   orderCode: string;
@@ -38,11 +24,9 @@ export type OrderRecord = {
   deliveryMethod?: DeliveryMethod;
   createdAt?: string;
   updatedAt?: string;
-  status?: OrderStatus;
   items: OrderItem[];
   trackingNumber?: string;
   shippingProvider?: string;
-  timeline?: OrderTimelineEvent[];
   staffNotes?: string;
 };
 
@@ -60,10 +44,8 @@ export type PublicOrderItem = {
 export type PublicOrderSummary = {
   orderCode: string;
   createdAt?: string;
-  status?: OrderStatus;
   deliveryMethod?: DeliveryMethod;
   items: PublicOrderItem[];
   trackingNumber?: string;
   shippingProvider?: string;
-  timeline: OrderTimelineEvent[];
 };

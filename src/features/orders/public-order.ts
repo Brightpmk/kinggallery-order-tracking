@@ -7,7 +7,6 @@ export function toPublicOrderSummary(
   return {
     orderCode: order.orderCode,
     createdAt: order.createdAt,
-    status: order.status,
     deliveryMethod: order.deliveryMethod,
     items: items.map((item) => ({
       productName: item.productName,
@@ -20,7 +19,6 @@ export function toPublicOrderSummary(
       quantity: item.quantity
     })),
     shippingProvider: order.shippingProvider,
-    trackingNumber: order.trackingNumber,
-    timeline: order.timeline ?? []
+    trackingNumber: order.trackingNumber
   };
 }

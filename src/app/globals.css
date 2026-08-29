@@ -706,55 +706,8 @@ h3 {
   font-style: italic;
 }
 
-/* ── Status Badges ── */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 34px;
-  padding: 7px 16px;
-  border-radius: var(--radius-pill);
-  font-family: var(--font-body);
-  font-size: 0.84rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  text-transform: uppercase;
-}
-
-.status-badge--pending,
-.status-badge--confirmed {
-  background: rgba(201, 169, 110, 0.12);
-  border: 1px solid rgba(201, 169, 110, 0.25);
-  color: #8B7340;
-}
-
-.status-badge--preparing {
-  background: rgba(92, 20, 24, 0.06);
-  border: 1px solid rgba(92, 20, 24, 0.12);
-  color: var(--accent);
-}
-
-.status-badge--shipped {
-  background: rgba(92, 20, 24, 0.10);
-  border: 1px solid rgba(92, 20, 24, 0.18);
-  color: var(--accent);
-}
-
-.status-badge--delivered {
-  background: rgba(201, 169, 110, 0.18);
-  border: 1px solid rgba(201, 169, 110, 0.35);
-  color: #6B5530;
-}
-
-.status-badge--cancelled {
-  background: rgba(61, 13, 16, 0.08);
-  border: 1px solid rgba(61, 13, 16, 0.15);
-  color: var(--accent-strong);
-}
-
 /* ── Order Items ── */
-.order-items,
-.timeline {
+.order-items {
   display: grid;
   gap: 0;
   padding: 0;
@@ -909,68 +862,6 @@ h3 {
   color: var(--foreground);
 }
 
-/* ── Timeline ── */
-.timeline {
-  gap: 0;
-}
-
-.timeline li {
-  display: grid;
-  gap: 6px;
-  padding: 16px 0 16px 20px;
-  border-left: 2px solid var(--panel-border);
-  position: relative;
-}
-
-.timeline li::before {
-  content: "";
-  position: absolute;
-  left: -5px;
-  top: 20px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--panel-border);
-  border: 2px solid var(--panel-solid);
-  transition: all var(--transition-base);
-}
-
-.timeline li:last-child {
-  border-left-color: var(--gold);
-}
-
-.timeline li:last-child::before {
-  background: var(--gold);
-  border-color: var(--panel-solid);
-  box-shadow: 0 0 0 3px var(--gold-soft);
-}
-
-.timeline div {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.timeline strong {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  color: var(--foreground);
-  letter-spacing: 0.02em;
-}
-
-.timeline time {
-  font-style: italic;
-  color: var(--muted);
-  font-size: 0.88rem;
-}
-
-.timeline p {
-  margin: 0 0 8px;
-  color: var(--muted);
-  line-height: 1.55;
-  font-style: italic;
-}
-
 /* ── Site Footer ── */
 .site-footer {
   position: relative;
@@ -1008,8 +899,7 @@ h3 {
     grid-template-columns: 1fr;
   }
 
-  .order-card__header,
-  .timeline div {
+  .order-card__header {
     flex-direction: column;
   }
 

@@ -1,8 +1,6 @@
 import type { PublicOrderSummary } from "@/features/orders/types";
 import { getDeliveryMethodLabel } from "@/features/orders/jersey";
 import { OrderItemList } from "./OrderItemList";
-import { OrderStatusBadge } from "./OrderStatusBadge";
-import { OrderTimeline } from "./OrderTimeline";
 
 type OrderCardProps = {
   order: PublicOrderSummary;
@@ -11,7 +9,6 @@ type OrderCardProps = {
 export function OrderCard({ order }: OrderCardProps) {
   const hasDeliveryDetails =
     order.deliveryMethod || order.shippingProvider || order.trackingNumber;
-  const hasTimeline = order.timeline.length > 0;
 
   return (
     <article className="order-card">
@@ -23,7 +20,6 @@ export function OrderCard({ order }: OrderCardProps) {
             <time dateTime={order.createdAt}>{formatOrderDate(order.createdAt)}</time>
           ) : null}
         </div>
-        {order.status ? <OrderStatusBadge status={order.status} /> : null}
       </div>
 
       <section className="order-section" aria-label="Jersey details">
@@ -59,12 +55,6 @@ export function OrderCard({ order }: OrderCardProps) {
         </section>
       ) : null}
 
-      {hasTimeline ? (
-        <section className="order-section timeline-section" aria-label="Order status">
-          <h3>Order status</h3>
-          <OrderTimeline timeline={order.timeline} />
-        </section>
-      ) : null}
     </article>
   );
 }
