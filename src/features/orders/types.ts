@@ -17,10 +17,16 @@ export type OrderItem = {
   currency: string;
 };
 
+export type OrderCustomerPrivateFields = {
+  fullName: string | null;
+  phoneNumber: string | null;
+};
+
 export type OrderRecord = {
   id: string;
   orderCode: string;
   source: OrderSource;
+  customer?: OrderCustomerPrivateFields;
   deliveryMethod?: DeliveryMethod;
   createdAt?: string;
   updatedAt?: string;

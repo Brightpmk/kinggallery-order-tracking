@@ -1,12 +1,45 @@
 import { toPublicOrderSummary } from "./public-order";
 import {
-  normalizeJerseyNumber,
-  normalizePrintedName,
+  normalizeFullName,
   normalizeJerseyOrderSearch,
+  normalizeJerseyNumber,
+  normalizeOrderSearch,
+  normalizePhoneNumber,
+  normalizePrintedName,
+  type CustomerOrderSearchInput,
   type JerseyOrderSearchInput,
-  type NormalizedJerseyOrderSearch
+  type NormalizedCustomerOrderSearch,
+  type NormalizedJerseyOrderSearch,
+  type OrderSearchInput
 } from "./search-normalization";
 import type { OrderItem, OrderRecord, PublicOrderSummary } from "./types";
+
+export function searchOrders(
+  orders: OrderRecord[],
+  input: OrderSearchInput
+): PublicOrderSummary[] {
+  const normalizedSearch = normalizeOrderSearch(input);
+
+  if (!normalizedSearch) {
+    return [];
+  }
+
+  if (normalizedSearch.searchMode === "customer") {
+    return searchCustomerOrderRecords(orders, normalizedSearch);
+  }
+
+  return searchJerseyItems(orders, normalizedSearch);
+}
+
+export function searchCustomerOrders(
+  orders: OrderRecord[],
+  input: CustomerOrderSearchInput
+): PublicOrderSummary[] {
+  return searchOrders(orders, {
+    searchMode: "customer",
+    ...input
+  });
+}
 
 export function searchJerseyOrders(
   orders: OrderRecord[],
@@ -21,6 +54,16 @@ export function searchJerseyOrders(
   return searchJerseyItems(orders, normalizedSearch);
 }
 
+function searchCustomerOrderRecords(
+  orders: OrderRecord[],
+  search: NormalizedCustomerOrderSearch
+): PublicOrderSummary[] {
+  return orders
+    .filter((order) => isMatchingCustomer(order, search))
+    .sort(sortByNewest)
+    .map((order) => toPublicOrderSummary(order));
+}
+
 function searchJerseyItems(
   orders: OrderRecord[],
   search: NormalizedJerseyOrderSearch
@@ -33,6 +76,24 @@ function searchJerseyItems(
     .filter(({ matchingItems }) => matchingItems.length > 0)
     .sort((first, second) => sortByNewest(first.order, second.order))
     .map(({ order, matchingItems }) => toPublicOrderSummary(order, matchingItems));
+}
+
+function isMatchingCustomer(
+  order: OrderRecord,
+  search: NormalizedCustomerOrderSearch
+): boolean {
+  const customer = order.customer;
+
+  if (!customer) {
+    return false;
+  }
+
+  return (
+    (search.fullName !== null &&
+      normalizeFullName(customer.fullName ?? "") === search.fullName) ||
+    (search.phoneNumber !== null &&
+      normalizePhoneNumber(customer.phoneNumber ?? "") === search.phoneNumber)
+  );
 }
 
 function isMatchingJersey(item: OrderItem, search: NormalizedJerseyOrderSearch): boolean {

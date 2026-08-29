@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { adaptGoogleFormSheetRows, googleFormHeaders } from "./google-form-sheet-adapter";
 import { adaptManualOrderSheetRows } from "./manual-order-sheet-adapter";
-import { searchJerseyOrders } from "./order-search";
+import { searchCustomerOrders, searchJerseyOrders, searchOrders } from "./order-search";
 import type { OrderRecord } from "./types";
 
 const formHeaderRow = [
   googleFormHeaders.timestamp,
-  "ชื่อ-นามสกุล(Full Name)",
-  "เบอร์โทร(Phone number)",
+  googleFormHeaders.fullName,
+  googleFormHeaders.phoneNumber,
   "อีเมล(E-mail)",
   "ช่องทางการติดต่อ(ID Line/Instagram/Facebook)",
   googleFormHeaders.color,
@@ -49,6 +49,50 @@ function buildFormRows() {
   ];
 }
 
+function buildMultiOrderFormRows() {
+  return [
+    formHeaderRow,
+    [
+      "20/7/2026, 19:09:08",
+      " Private   Customer ",
+      "096-096-9594",
+      "private@example.com",
+      "line-private",
+      "IGNITE RED",
+      "XL",
+      "bright",
+      "67",
+      "KMUTT",
+      "https://drive.google.com/payment-slip",
+      "",
+      "",
+      "private@example.com",
+      "นัดรับที่มหาวิทยาลัยพระจอมเกล้าธนบุรี",
+      "private address",
+      "1. IGNITE RED/XL/bright/67/KMUTT\n2. SONIC BLUE/L/BRIGHT/21/KMUTT"
+    ],
+    [
+      "21/7/2026, 08:00:00",
+      "private customer",
+      "096 096 9594",
+      "private@example.com",
+      "line-private",
+      "SHADOW BLACK",
+      "M",
+      "PC",
+      "10",
+      "KMUTT",
+      "https://drive.google.com/another-slip",
+      "",
+      "",
+      "private@example.com",
+      "นัดรับที่มหาวิทยาลัยพระจอมเกล้าธนบุรี",
+      "another private address",
+      ""
+    ]
+  ];
+}
+
 function buildManualRows() {
   return [
     ["ORDER NUMBER", "COLOR", "NAME", "NUMBER", "SIZE", "UNIVERSITY", "PAYMENT STATUS"],
@@ -58,6 +102,61 @@ function buildManualRows() {
 }
 
 describe("jersey order search", () => {
+  it("finds old Google Form orders by full customer name", () => {
+    const { orders } = adaptGoogleFormSheetRows(buildFormRows());
+    const result = searchCustomerOrders(orders, {
+      fullName: " private   customer ",
+      phoneNumber: ""
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].items).toHaveLength(2);
+  });
+
+  it("finds old Google Form orders by formatted phone number", () => {
+    const { orders } = adaptGoogleFormSheetRows(buildMultiOrderFormRows());
+    const result = searchCustomerOrders(orders, {
+      fullName: "",
+      phoneNumber: "096 096-9594"
+    });
+
+    expect(result).toHaveLength(2);
+    expect(result.flatMap((order) => order.items)).toHaveLength(3);
+  });
+
+  it("matches customer name or phone number without requiring both", () => {
+    const { orders } = adaptGoogleFormSheetRows(buildFormRows());
+    const result = searchCustomerOrders(orders, {
+      fullName: "Wrong Customer",
+      phoneNumber: "096-096-9594"
+    });
+
+    expect(result).toHaveLength(1);
+  });
+
+  it("preserves meaningful leading zeroes in phone search", () => {
+    const { orders } = adaptGoogleFormSheetRows(buildFormRows());
+
+    expect(
+      searchCustomerOrders(orders, {
+        fullName: "",
+        phoneNumber: "960969594"
+      })
+    ).toEqual([]);
+  });
+
+  it("handles multiple separate orders for the same customer", () => {
+    const { orders } = adaptGoogleFormSheetRows(buildMultiOrderFormRows());
+    const result = searchOrders(orders, {
+      searchMode: "customer",
+      fullName: "PRIVATE CUSTOMER",
+      phoneNumber: ""
+    });
+
+    expect(result).toHaveLength(2);
+    expect(result.map((order) => order.items.length)).toEqual([1, 2]);
+  });
+
   it("finds a jersey from the old Google Form Sheet", () => {
     const { orders } = adaptGoogleFormSheetRows(buildFormRows());
     const result = searchJerseyOrders(orders, {
@@ -98,6 +197,19 @@ describe("jersey order search", () => {
     });
 
     expect(result).toHaveLength(3);
+  });
+
+  it("searches customer mode across the combined current source models", () => {
+    const formOrders = adaptGoogleFormSheetRows(buildFormRows()).orders;
+    const manualOrders = adaptManualOrderSheetRows(buildManualRows()).orders;
+    const result = searchOrders([...formOrders, ...manualOrders], {
+      searchMode: "customer",
+      fullName: "Private Customer",
+      phoneNumber: ""
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].items).toHaveLength(2);
   });
 
   it("requires printed name and jersey number", () => {
@@ -161,9 +273,9 @@ describe("jersey order search", () => {
 
   it("does not expose sensitive Sheet fields in public search results", () => {
     const { orders } = adaptGoogleFormSheetRows(buildFormRows());
-    const result = searchJerseyOrders(orders, {
-      printName: "BRIGHT",
-      shirtNumber: "67"
+    const result = searchCustomerOrders(orders, {
+      fullName: "Private Customer",
+      phoneNumber: ""
     });
     const serializedResult = JSON.stringify(result);
 

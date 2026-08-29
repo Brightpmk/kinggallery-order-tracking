@@ -7,8 +7,12 @@ import {
 import { adaptGoogleFormSheetRows } from "./google-form-sheet-adapter";
 import { adaptManualOrderSheetRows } from "./manual-order-sheet-adapter";
 import type { OrderSheetSource } from "./order-source";
-import { searchJerseyOrders } from "./order-search";
-import type { JerseyOrderSearchInput } from "./search-normalization";
+import { searchJerseyOrders, searchOrders } from "./order-search";
+import type {
+  JerseyOrderSearchInput,
+  OrderSearchInput
+} from "./search-normalization";
+import { normalizeOrderSearch } from "./search-normalization";
 import { SheetSchemaError } from "./sheet-normalization";
 import type { OrderRecord, PublicOrderSummary } from "./types";
 
@@ -61,6 +65,27 @@ export async function findJerseyOrders(
     return {
       ok: true,
       orders: searchJerseyOrders(orders, input),
+      source: "google_sheets"
+    };
+  } catch (error) {
+    logOrderLookupError(error);
+    return { ok: false, error: "lookup_failed" };
+  }
+}
+
+export async function findOrders(
+  input: OrderSearchInput
+): Promise<JerseyOrderLookupResult> {
+  if (!normalizeOrderSearch(input)) {
+    return { ok: false, error: "invalid_input" };
+  }
+
+  try {
+    const orders = await readAllNormalizedOrders();
+
+    return {
+      ok: true,
+      orders: searchOrders(orders, input),
       source: "google_sheets"
     };
   } catch (error) {

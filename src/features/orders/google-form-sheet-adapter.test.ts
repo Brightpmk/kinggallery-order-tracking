@@ -8,8 +8,8 @@ import { searchJerseyOrders } from "./order-search";
 
 const headerRow = [
   googleFormHeaders.timestamp,
-  "ชื่อ-นามสกุล(Full Name)",
-  "เบอร์โทร(Phone number)",
+  googleFormHeaders.fullName,
+  googleFormHeaders.phoneNumber,
   "อีเมล(E-mail)",
   "ช่องทางการติดต่อ(ID Line/Instagram/Facebook)",
   googleFormHeaders.color,
@@ -56,6 +56,10 @@ describe("Google Form Sheet adapter", () => {
     const { orders } = adaptGoogleFormSheetRows(buildRows());
 
     expect(orders).toHaveLength(1);
+    expect(orders[0].customer).toEqual({
+      fullName: "Bright Example",
+      phoneNumber: "096-096-9594"
+    });
     expect(orders[0].items).toEqual([
       expect.objectContaining({
         jerseyColor: "IGNITE RED",

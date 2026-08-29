@@ -24,6 +24,8 @@ const defaultCurrency = "THB";
 
 export const googleFormHeaders = {
   timestamp: "ประทับเวลา",
+  fullName: "ชื่อ-นามสกุล(Full Name)",
+  phoneNumber: "เบอร์โทร(Phone number)",
   color: "𝐂𝐇𝐎𝐎𝐒𝐄 𝐘𝐎𝐔𝐑 𝐂𝐎𝐋𝐎𝐔𝐑",
   size: "𝐂𝐇𝐎𝐎𝐒𝐄 𝐘𝐎𝐔𝐑 𝐒𝐈𝐙𝐄",
   printName: "𝐍𝐀𝐌𝐄",
@@ -35,6 +37,8 @@ export const googleFormHeaders = {
 
 type GoogleFormColumnIndexes = {
   timestamp: number;
+  fullName: number;
+  phoneNumber: number;
   color: number;
   size: number;
   printName: number;
@@ -88,6 +92,10 @@ export function adaptGoogleFormSheetRows(rows: SheetRow[]): GoogleFormAdapterRes
       id: createOrderId(createdAt, items),
       orderCode: createOrderCode(createdAt, items),
       source: "google_form",
+      customer: {
+        fullName: normalizeDisplayText(row[columns.fullName]) || null,
+        phoneNumber: normalizeJerseyNumberValue(row[columns.phoneNumber]) || null
+      },
       deliveryMethod: normalizeDeliveryMethod(row[columns.delivery]),
       createdAt,
       updatedAt: createdAt,
@@ -142,6 +150,8 @@ export function areSameJersey(first: OrderItem, second: OrderItem): boolean {
 function findGoogleFormColumns(headerRow: SheetRow): GoogleFormColumnIndexes {
   return {
     timestamp: requireSheetHeader(headerRow, googleFormHeaders.timestamp),
+    fullName: requireSheetHeader(headerRow, googleFormHeaders.fullName),
+    phoneNumber: requireSheetHeader(headerRow, googleFormHeaders.phoneNumber),
     color: requireSheetHeader(headerRow, googleFormHeaders.color),
     size: requireSheetHeader(headerRow, googleFormHeaders.size),
     printName: requireSheetHeader(headerRow, googleFormHeaders.printName),
