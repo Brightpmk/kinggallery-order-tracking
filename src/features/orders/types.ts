@@ -10,6 +10,8 @@ export type OrderStatus =
 
 export type OrderSource = "google_form" | "line" | "manual";
 
+export type PaymentStatus = "paid" | "unpaid";
+
 export type OrderItem = {
   productName: string;
   jerseyColor: JerseyColor | null;
@@ -17,6 +19,7 @@ export type OrderItem = {
   printName: string | null;
   shirtNumber: string | null;
   universityAbbreviation: string | null;
+  paymentStatus: PaymentStatus;
   quantity: number;
   unitPrice: number | null;
   currency: string;
@@ -28,23 +31,18 @@ export type OrderTimelineEvent = {
   note: string;
 };
 
-export type CustomerPrivateFields = {
-  customerName: string;
-  phoneNumber: string;
-};
-
-export type OrderRecord = CustomerPrivateFields & {
+export type OrderRecord = {
   id: string;
   orderCode: string;
   source: OrderSource;
-  deliveryMethod: DeliveryMethod;
-  createdAt: string;
-  updatedAt: string;
-  status: OrderStatus;
+  deliveryMethod?: DeliveryMethod;
+  createdAt?: string;
+  updatedAt?: string;
+  status?: OrderStatus;
   items: OrderItem[];
   trackingNumber?: string;
   shippingProvider?: string;
-  timeline: OrderTimelineEvent[];
+  timeline?: OrderTimelineEvent[];
   staffNotes?: string;
 };
 
@@ -55,14 +53,15 @@ export type PublicOrderItem = {
   printName: string | null;
   shirtNumber: string | null;
   universityAbbreviation: string | null;
+  paymentStatus: PaymentStatus;
   quantity: number;
 };
 
 export type PublicOrderSummary = {
   orderCode: string;
-  createdAt: string;
-  status: OrderStatus;
-  deliveryMethod: DeliveryMethod;
+  createdAt?: string;
+  status?: OrderStatus;
+  deliveryMethod?: DeliveryMethod;
   items: PublicOrderItem[];
   trackingNumber?: string;
   shippingProvider?: string;

@@ -52,6 +52,16 @@ export function OrderItemList({ items }: OrderItemListProps) {
                 <dt>University</dt>
                 <dd>{item.universityAbbreviation ?? "Not set"}</dd>
               </div>
+              <div>
+                <dt>Payment</dt>
+                <dd>
+                  <span
+                    className={`payment-status payment-status--${item.paymentStatus}`}
+                  >
+                    {item.paymentStatus === "paid" ? "Paid" : "Unpaid"}
+                  </span>
+                </dd>
+              </div>
             </dl>
           </div>
         </li>

@@ -805,7 +805,7 @@ h3 {
 /* ── Jersey Details Grid ── */
 .jersey-details {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
   margin: 0;
 }
@@ -848,6 +848,29 @@ h3 {
   content: "";
   flex: 0 0 auto;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.payment-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.payment-status--paid {
+  background: rgba(201, 169, 110, 0.16);
+  border: 1px solid rgba(201, 169, 110, 0.3);
+  color: #6B5530;
+}
+
+.payment-status--unpaid {
+  background: rgba(92, 20, 24, 0.08);
+  border: 1px solid rgba(92, 20, 24, 0.16);
+  color: var(--accent);
 }
 
 /* ── Delivery Details ── */

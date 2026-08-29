@@ -1,8 +1,13 @@
 import "server-only";
 
-export type GoogleSheetsConfig = {
+export type GoogleSheetRangeConfig = {
   spreadsheetId: string;
-  formResponsesRange: string;
+  range: string;
+};
+
+export type GoogleSheetsConfig = {
+  formResponses: GoogleSheetRangeConfig;
+  manualOrders: GoogleSheetRangeConfig;
   serviceAccountEmail: string;
   serviceAccountPrivateKey: string;
   cacheTtlMs: number;
@@ -12,21 +17,37 @@ const defaultFormResponsesRange = "'การตอบแบบฟอร์ม 1
 const defaultCacheTtlMs = 60_000;
 
 export function getGoogleSheetsConfig(): GoogleSheetsConfig | null {
-  const spreadsheetId = readEnvValue("GOOGLE_SHEETS_SPREADSHEET_ID");
+  const formSpreadsheetId = readEnvValue("GOOGLE_SHEETS_SPREADSHEET_ID");
+  const manualSpreadsheetId = readEnvValue(
+    "GOOGLE_SHEETS_MANUAL_SPREADSHEET_ID"
+  );
+  const manualRange = readEnvValue("GOOGLE_SHEETS_MANUAL_RANGE");
   const serviceAccountEmail = readEnvValue("GOOGLE_SERVICE_ACCOUNT_EMAIL");
   const serviceAccountPrivateKey = readEnvValue(
     "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY"
   );
 
-  if (!spreadsheetId || !serviceAccountEmail || !serviceAccountPrivateKey) {
+  if (
+    !formSpreadsheetId ||
+    !manualSpreadsheetId ||
+    !manualRange ||
+    !serviceAccountEmail ||
+    !serviceAccountPrivateKey
+  ) {
     return null;
   }
 
   return {
-    spreadsheetId,
-    formResponsesRange:
-      readEnvValue("GOOGLE_SHEETS_FORM_RESPONSES_RANGE") ??
-      defaultFormResponsesRange,
+    formResponses: {
+      spreadsheetId: formSpreadsheetId,
+      range:
+        readEnvValue("GOOGLE_SHEETS_FORM_RESPONSES_RANGE") ??
+        defaultFormResponsesRange
+    },
+    manualOrders: {
+      spreadsheetId: manualSpreadsheetId,
+      range: manualRange
+    },
     serviceAccountEmail,
     serviceAccountPrivateKey: normalizePrivateKey(serviceAccountPrivateKey),
     cacheTtlMs: readCacheTtlMs()

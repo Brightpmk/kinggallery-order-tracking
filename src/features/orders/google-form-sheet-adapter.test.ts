@@ -4,12 +4,12 @@ import {
   googleFormHeaders,
   parseMultiJerseyField
 } from "./google-form-sheet-adapter";
-import { searchOrders } from "./order-search";
+import { searchJerseyOrders } from "./order-search";
 
 const headerRow = [
   googleFormHeaders.timestamp,
-  googleFormHeaders.fullName,
-  googleFormHeaders.phoneNumber,
+  "ชื่อ-นามสกุล(Full Name)",
+  "เบอร์โทร(Phone number)",
   "อีเมล(E-mail)",
   "ช่องทางการติดต่อ(ID Line/Instagram/Facebook)",
   googleFormHeaders.color,
@@ -62,7 +62,8 @@ describe("Google Form Sheet adapter", () => {
         jerseySize: "XL",
         printName: "BRIGHT",
         shirtNumber: "07",
-        universityAbbreviation: "KMUTT"
+        universityAbbreviation: "KMUTT",
+        paymentStatus: "paid"
       })
     ]);
   });
@@ -138,10 +139,9 @@ describe("Google Form Sheet adapter", () => {
     const { orders } = adaptGoogleFormSheetRows(
       buildRows("1. SONIC BLUE/XL/BRIGHT/67/KMUTT")
     );
-    const result = searchOrders(orders, {
-      mode: "customer",
-      type: "phone",
-      value: "0960969594"
+    const result = searchJerseyOrders(orders, {
+      printName: "BRIGHT",
+      shirtNumber: "67"
     });
 
     expect(JSON.stringify(result)).not.toContain("private@example.com");

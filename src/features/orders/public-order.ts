@@ -16,10 +16,11 @@ export function toPublicOrderSummary(
       printName: item.printName,
       shirtNumber: item.shirtNumber,
       universityAbbreviation: item.universityAbbreviation,
+      paymentStatus: item.paymentStatus,
       quantity: item.quantity
     })),
     shippingProvider: order.shippingProvider,
     trackingNumber: order.trackingNumber,
-    timeline: order.timeline
+    timeline: order.timeline ?? []
   };
 }

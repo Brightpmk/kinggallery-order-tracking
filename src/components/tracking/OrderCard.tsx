@@ -9,15 +9,21 @@ type OrderCardProps = {
 };
 
 export function OrderCard({ order }: OrderCardProps) {
+  const hasDeliveryDetails =
+    order.deliveryMethod || order.shippingProvider || order.trackingNumber;
+  const hasTimeline = order.timeline.length > 0;
+
   return (
     <article className="order-card">
       <div className="order-card__header">
         <div>
           <p className="label">Order code</p>
           <h2>{order.orderCode}</h2>
-          <time dateTime={order.createdAt}>{formatOrderDate(order.createdAt)}</time>
+          {order.createdAt ? (
+            <time dateTime={order.createdAt}>{formatOrderDate(order.createdAt)}</time>
+          ) : null}
         </div>
-        <OrderStatusBadge status={order.status} />
+        {order.status ? <OrderStatusBadge status={order.status} /> : null}
       </div>
 
       <section className="order-section" aria-label="Jersey details">
@@ -25,34 +31,40 @@ export function OrderCard({ order }: OrderCardProps) {
         <OrderItemList items={order.items} />
       </section>
 
-      <section className="order-section" aria-label="Delivery details">
-        <h3>Delivery</h3>
-        <dl className="delivery-details">
-          <div>
-            <dt>Method</dt>
-            <dd>{getDeliveryMethodLabel(order.deliveryMethod)}</dd>
-          </div>
-          {order.deliveryMethod === "shipping" ? (
-            <>
+      {hasDeliveryDetails ? (
+        <section className="order-section" aria-label="Delivery details">
+          <h3>Delivery</h3>
+          <dl className="delivery-details">
+            {order.deliveryMethod ? (
               <div>
-                <dt>Shipping provider</dt>
-                <dd>{order.shippingProvider ?? "Provider not available yet"}</dd>
+                <dt>Method</dt>
+                <dd>{getDeliveryMethodLabel(order.deliveryMethod)}</dd>
               </div>
-              <div>
-                <dt>Tracking number</dt>
-                <dd>
-                  {order.trackingNumber ?? "Tracking number not available yet"}
-                </dd>
-              </div>
-            </>
-          ) : null}
-        </dl>
-      </section>
+            ) : null}
+            {order.deliveryMethod === "shipping" ? (
+              <>
+                <div>
+                  <dt>Shipping provider</dt>
+                  <dd>{order.shippingProvider ?? "Provider not available yet"}</dd>
+                </div>
+                <div>
+                  <dt>Tracking number</dt>
+                  <dd>
+                    {order.trackingNumber ?? "Tracking number not available yet"}
+                  </dd>
+                </div>
+              </>
+            ) : null}
+          </dl>
+        </section>
+      ) : null}
 
-      <section className="order-section timeline-section" aria-label="Order status">
-        <h3>Order status</h3>
-        <OrderTimeline timeline={order.timeline} />
-      </section>
+      {hasTimeline ? (
+        <section className="order-section timeline-section" aria-label="Order status">
+          <h3>Order status</h3>
+          <OrderTimeline timeline={order.timeline} />
+        </section>
+      ) : null}
     </article>
   );
 }

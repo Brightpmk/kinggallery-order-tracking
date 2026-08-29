@@ -1,11 +1,22 @@
 import type { SheetCellValue, SheetRow } from "@/lib/google-sheets/sheets-client";
 import {
-  jerseyColors,
-  jerseySizes,
   type DeliveryMethod,
   type JerseyColor,
   type JerseySize
 } from "./jersey";
+import {
+  cellToIdentifier,
+  createInitialDiagnostics,
+  hashStableValue,
+  normalizeDisplayText,
+  normalizeJerseyColorValue,
+  normalizeJerseyNumberValue,
+  normalizeJerseySizeValue,
+  normalizePrintedNameValue,
+  requireHeader as requireSheetHeader,
+  SheetSchemaError,
+  type AdapterDiagnostics
+} from "./sheet-normalization";
 import type { OrderItem, OrderRecord } from "./types";
 
 const productName = "University Jersey Shirt";
@@ -13,8 +24,6 @@ const defaultCurrency = "THB";
 
 export const googleFormHeaders = {
   timestamp: "ประทับเวลา",
-  fullName: "ชื่อ-นามสกุล(Full Name)",
-  phoneNumber: "เบอร์โทร(Phone number)",
   color: "𝐂𝐇𝐎𝐎𝐒𝐄 𝐘𝐎𝐔𝐑 𝐂𝐎𝐋𝐎𝐔𝐑",
   size: "𝐂𝐇𝐎𝐎𝐒𝐄 𝐘𝐎𝐔𝐑 𝐒𝐈𝐙𝐄",
   printName: "𝐍𝐀𝐌𝐄",
@@ -26,8 +35,6 @@ export const googleFormHeaders = {
 
 type GoogleFormColumnIndexes = {
   timestamp: number;
-  fullName: number;
-  phoneNumber: number;
   color: number;
   size: number;
   printName: number;
@@ -35,11 +42,6 @@ type GoogleFormColumnIndexes = {
   university: number;
   delivery: number;
   multiJersey: number;
-};
-
-export type AdapterDiagnostics = {
-  skippedRows: number;
-  malformedMultiJerseyEntries: number;
 };
 
 export type GoogleFormAdapterResult = {
@@ -51,23 +53,18 @@ export function adaptGoogleFormSheetRows(rows: SheetRow[]): GoogleFormAdapterRes
   const [headerRow, ...dataRows] = rows;
 
   if (!headerRow) {
-    throw new GoogleFormSheetSchemaError("Google Form response sheet is empty.");
+    throw new SheetSchemaError("Google Form response sheet is empty.");
   }
 
   const columns = findGoogleFormColumns(headerRow);
-  const diagnostics: AdapterDiagnostics = {
-    skippedRows: 0,
-    malformedMultiJerseyEntries: 0
-  };
+  const diagnostics = createInitialDiagnostics();
   const orders: OrderRecord[] = [];
 
   dataRows.forEach((row) => {
     const timestamp = cellToIdentifier(row[columns.timestamp]);
-    const customerName = normalizeDisplayText(row[columns.fullName]);
-    const phoneNumber = normalizePhoneIdentifier(row[columns.phoneNumber]);
     const createdAt = parseSheetTimestamp(timestamp);
 
-    if (!createdAt || customerName === "" || phoneNumber === "") {
+    if (!createdAt) {
       diagnostics.skippedRows += 1;
       return;
     }
@@ -88,15 +85,13 @@ export function adaptGoogleFormSheetRows(rows: SheetRow[]): GoogleFormAdapterRes
     );
 
     orders.push({
-      id: createOrderId(customerName, phoneNumber, createdAt),
-      orderCode: createOrderCode(customerName, phoneNumber, createdAt),
+      id: createOrderId(createdAt, items),
+      orderCode: createOrderCode(createdAt, items),
       source: "google_form",
       deliveryMethod: normalizeDeliveryMethod(row[columns.delivery]),
       createdAt,
       updatedAt: createdAt,
       status: "pending",
-      customerName,
-      phoneNumber,
       items,
       timeline: [
         {
@@ -109,13 +104,6 @@ export function adaptGoogleFormSheetRows(rows: SheetRow[]): GoogleFormAdapterRes
   });
 
   return { orders, diagnostics };
-}
-
-export class GoogleFormSheetSchemaError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "GoogleFormSheetSchemaError";
-  }
 }
 
 export function parseMultiJerseyField(value: SheetCellValue): {
@@ -161,36 +149,18 @@ export function areSameJersey(first: OrderItem, second: OrderItem): boolean {
 
 function findGoogleFormColumns(headerRow: SheetRow): GoogleFormColumnIndexes {
   return {
-    timestamp: requireHeader(headerRow, googleFormHeaders.timestamp),
-    fullName: requireHeader(headerRow, googleFormHeaders.fullName),
-    phoneNumber: requireHeader(headerRow, googleFormHeaders.phoneNumber),
-    color: requireHeader(headerRow, googleFormHeaders.color),
-    size: requireHeader(headerRow, googleFormHeaders.size),
-    printName: requireHeader(headerRow, googleFormHeaders.printName),
-    shirtNumber: requireHeader(headerRow, googleFormHeaders.shirtNumber),
-    university: requireHeader(headerRow, googleFormHeaders.university),
-    delivery: requireHeader(headerRow, googleFormHeaders.delivery),
-    multiJersey: requireHeader(headerRow, googleFormHeaders.multiJerseyPrefix)
+    timestamp: requireSheetHeader(headerRow, googleFormHeaders.timestamp),
+    color: requireSheetHeader(headerRow, googleFormHeaders.color),
+    size: requireSheetHeader(headerRow, googleFormHeaders.size),
+    printName: requireSheetHeader(headerRow, googleFormHeaders.printName),
+    shirtNumber: requireSheetHeader(headerRow, googleFormHeaders.shirtNumber),
+    university: requireSheetHeader(headerRow, googleFormHeaders.university),
+    delivery: requireSheetHeader(headerRow, googleFormHeaders.delivery),
+    multiJersey: requireSheetHeader(
+      headerRow,
+      googleFormHeaders.multiJerseyPrefix
+    )
   };
-}
-
-function requireHeader(headerRow: SheetRow, expectedHeader: string): number {
-  const expected = normalizeHeader(expectedHeader);
-  const index = headerRow.findIndex((header) =>
-    normalizeHeader(header).startsWith(expected)
-  );
-
-  if (index === -1) {
-    throw new GoogleFormSheetSchemaError(
-      `Missing required Google Form Sheet column: ${expectedHeader}`
-    );
-  }
-
-  return index;
-}
-
-function normalizeHeader(value: SheetCellValue): string {
-  return cellToIdentifier(value).replace(/\s+/g, " ").trim();
 }
 
 function parseStructuredJersey(
@@ -224,8 +194,8 @@ function parseJerseyParts(value: string): OrderItem | null {
   const [color, size, printName, shirtNumber, university] = parts;
   const normalizedColor = normalizeJerseyColor(color);
   const normalizedSize = normalizeJerseySize(size);
-  const normalizedPrintName = normalizeDisplayText(printName).toUpperCase();
-  const normalizedShirtNumber = normalizeIdentifier(shirtNumber);
+  const normalizedPrintName = normalizePrintedNameValue(printName);
+  const normalizedShirtNumber = normalizeJerseyNumberValue(shirtNumber);
   const normalizedUniversity = normalizeDisplayText(university).toUpperCase();
 
   if (
@@ -245,6 +215,7 @@ function parseJerseyParts(value: string): OrderItem | null {
     printName: normalizedPrintName,
     shirtNumber: normalizedShirtNumber,
     universityAbbreviation: normalizedUniversity,
+    paymentStatus: "paid",
     quantity: 1,
     unitPrice: null,
     currency: defaultCurrency
@@ -302,16 +273,13 @@ function normalizeDeliveryMethod(value: SheetCellValue): DeliveryMethod {
 }
 
 function normalizeJerseyColor(value: string): JerseyColor | null {
-  const normalizedValue = normalizeDisplayText(value).toUpperCase();
-  return jerseyColors.find((color) => color === normalizedValue) ?? null;
+  const normalizedValue = normalizeJerseyColorValue(value);
+  return normalizedValue === "" ? null : normalizedValue;
 }
 
 function normalizeJerseySize(value: string): JerseySize | null {
-  const normalizedValue = normalizeDisplayText(value)
-    .toUpperCase()
-    .replace(/\+.*/, "");
-
-  return jerseySizes.find((size) => size === normalizedValue) ?? null;
+  const normalizedValue = normalizeJerseySizeValue(value);
+  return normalizedValue === "" ? null : normalizedValue;
 }
 
 function parseSheetTimestamp(value: string): string | null {
@@ -407,20 +375,18 @@ function toBangkokIsoTimestamp(parts: {
 }
 
 function createOrderId(
-  customerName: string,
-  phoneNumber: string,
-  createdAt: string
+  createdAt: string,
+  items: OrderItem[]
 ): string {
-  return `google_form_${hashOrderIdentity(customerName, phoneNumber, createdAt)}`;
+  return `google_form_${hashOrderIdentity(createdAt, items)}`;
 }
 
 function createOrderCode(
-  customerName: string,
-  phoneNumber: string,
-  createdAt: string
+  createdAt: string,
+  items: OrderItem[]
 ): string {
   const datePrefix = createdAt.slice(0, 10).replace(/-/g, "");
-  const hash = hashOrderIdentity(customerName, phoneNumber, createdAt)
+  const hash = hashOrderIdentity(createdAt, items)
     .slice(0, 6)
     .toUpperCase();
 
@@ -428,41 +394,18 @@ function createOrderCode(
 }
 
 function hashOrderIdentity(
-  customerName: string,
-  phoneNumber: string,
-  createdAt: string
+  createdAt: string,
+  items: OrderItem[]
 ): string {
-  const value = `${customerName}|${phoneNumber}|${createdAt}`;
-  let hash = 0x811c9dc5;
-
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 0x01000193);
-  }
-
-  return (hash >>> 0).toString(36);
+  const value = `${createdAt}|${items
+    .map(
+      (item) =>
+        `${item.jerseyColor}|${item.jerseySize}|${item.printName}|${item.shirtNumber}|${item.universityAbbreviation}`
+    )
+    .join(";")}`;
+  return hashStableValue(value);
 }
 
 function normalizeJerseyIdentityPart(value: string | null): string {
   return normalizeDisplayText(value).toUpperCase();
-}
-
-function normalizeDisplayText(value: SheetCellValue): string {
-  return cellToIdentifier(value).replace(/\s+/g, " ").trim();
-}
-
-function normalizePhoneIdentifier(value: SheetCellValue): string {
-  return normalizeIdentifier(value).replace(/\D/g, "");
-}
-
-function normalizeIdentifier(value: SheetCellValue): string {
-  return cellToIdentifier(value).replace(/^\s+|\s+$/g, "").replace(/\.0+$/, "");
-}
-
-function cellToIdentifier(value: SheetCellValue): string {
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  return String(value);
 }

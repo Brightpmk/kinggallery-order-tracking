@@ -1,44 +1,19 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
-import { searchCustomerOrdersAction } from "@/features/orders/tracking-action";
-import {
-  initialTrackingSearchState,
-  type CustomerSearchType,
-  type TrackingSearchMode
-} from "@/features/orders/tracking-state";
+import { useActionState, useId } from "react";
+import { searchJerseyOrdersAction } from "@/features/orders/tracking-action";
+import { initialTrackingSearchState } from "@/features/orders/tracking-state";
 import { OrderCard } from "./OrderCard";
 
 export function TrackingSearchForm() {
   const [state, formAction, isPending] = useActionState(
-    searchCustomerOrdersAction,
+    searchJerseyOrdersAction,
     initialTrackingSearchState
   );
   const currentState = state ?? initialTrackingSearchState;
-  const [searchUiState, setSearchUiState] = useState<{
-    searchMode: TrackingSearchMode;
-    customerSearchType: CustomerSearchType;
-    submissionToken: number;
-  }>({
-    searchMode: currentState.searchMode,
-    customerSearchType: currentState.customerSearchType,
-    submissionToken: currentState.submissionToken
-  });
-
-  if (searchUiState.submissionToken !== currentState.submissionToken) {
-    setSearchUiState({
-      searchMode: currentState.searchMode,
-      customerSearchType: currentState.customerSearchType,
-      submissionToken: currentState.submissionToken
-    });
-  }
-
-  const searchMode = searchUiState.searchMode;
-  const customerSearchType = searchUiState.customerSearchType;
   const currentOrders = currentState.orders ?? [];
   const currentStatus = currentState.status ?? "idle";
   const currentMessage = currentState.message ?? null;
-  const customerInputId = useId();
   const printNameInputId = useId();
   const shirtNumberInputId = useId();
   const messageId = useId();
@@ -54,130 +29,40 @@ export function TrackingSearchForm() {
           <h1 id="tracking-title">Check your jersey order status</h1>
         </div>
         <p className="lede">
-          Search by customer details, or find one jersey with the printed name
-          and number.
+          Search with the printed name and jersey number shown on your order.
         </p>
 
         <form action={formAction} className="tracking-form">
-          <fieldset>
-            <legend>Mode</legend>
-            <label>
-              <input
-                checked={searchMode === "customer"}
-                name="searchMode"
-                onChange={() =>
-                  setSearchUiState((previousState) => ({
-                    ...previousState,
-                    searchMode: "customer"
-                  }))
-                }
-                type="radio"
-                value="customer"
-              />
-              Customer
-            </label>
-            <label>
-              <input
-                checked={searchMode === "jersey"}
-                name="searchMode"
-                onChange={() =>
-                  setSearchUiState((previousState) => ({
-                    ...previousState,
-                    searchMode: "jersey"
-                  }))
-                }
-                type="radio"
-                value="jersey"
-              />
-              Jersey
-            </label>
-          </fieldset>
-
-          {searchMode === "customer" ? (
-            <>
-              <fieldset>
-                <legend>Customer search</legend>
-                <label>
-                  <input
-                    checked={customerSearchType === "name"}
-                    name="customerSearchType"
-                    onChange={() =>
-                      setSearchUiState((previousState) => ({
-                        ...previousState,
-                        customerSearchType: "name"
-                      }))
-                    }
-                    type="radio"
-                    value="name"
-                  />
-                  Full name
-                </label>
-                <label>
-                  <input
-                    checked={customerSearchType === "phone"}
-                    name="customerSearchType"
-                    onChange={() =>
-                      setSearchUiState((previousState) => ({
-                        ...previousState,
-                        customerSearchType: "phone"
-                      }))
-                    }
-                    type="radio"
-                    value="phone"
-                  />
-                  Phone number
-                </label>
-              </fieldset>
-
-              <label className="search-field" htmlFor={customerInputId}>
-                {customerSearchType === "name" ? "Full name" : "Phone number"}
+          <div className="jersey-search-fields">
+            <div>
+              <label className="search-field" htmlFor={printNameInputId}>
+                Printed name
               </label>
               <input
                 aria-describedby={currentMessage ? messageId : undefined}
-                autoComplete={customerSearchType === "name" ? "name" : "tel"}
+                autoComplete="off"
                 className="tracking-input"
-                id={customerInputId}
-                name="customerQuery"
-                placeholder={
-                  customerSearchType === "name"
-                    ? "Alex Sample"
-                    : "+66 80 000 1001"
-                }
-                type={customerSearchType === "name" ? "text" : "tel"}
+                id={printNameInputId}
+                name="printName"
+                placeholder="BRIGHT"
+                type="text"
               />
-            </>
-          ) : (
-            <div className="jersey-search-fields">
-              <div>
-                <label className="search-field" htmlFor={printNameInputId}>
-                  Printed name
-                </label>
-                <input
-                  aria-describedby={currentMessage ? messageId : undefined}
-                  autoComplete="off"
-                  className="tracking-input"
-                  id={printNameInputId}
-                  name="printName"
-                  placeholder="BRIGHT"
-                  type="text"
-                />
-              </div>
-              <div>
-                <label className="search-field" htmlFor={shirtNumberInputId}>
-                  Jersey number
-                </label>
-                <input
-                  aria-describedby={currentMessage ? messageId : undefined}
-                  autoComplete="off"
-                  className="tracking-input"
-                  id={shirtNumberInputId}
-                  name="shirtNumber"
-                  placeholder="67"
-                  type="text"
-                />
-              </div>
             </div>
-          )}
+            <div>
+              <label className="search-field" htmlFor={shirtNumberInputId}>
+                Jersey number
+              </label>
+              <input
+                aria-describedby={currentMessage ? messageId : undefined}
+                autoComplete="off"
+                className="tracking-input"
+                id={shirtNumberInputId}
+                name="shirtNumber"
+                placeholder="67"
+                type="text"
+              />
+            </div>
+          </div>
 
           <button disabled={isPending} type="submit">
             {isPending ? "Checking..." : "Check Order Status"}
@@ -198,8 +83,8 @@ export function TrackingSearchForm() {
       <div className="tracking-results" aria-live="polite">
         {currentStatus === "idle" ? (
           <div className="empty-state">
-            <h2>Orders will appear here</h2>
-            <p>No order information is shown before a search.</p>
+            <h2>Matching jerseys will appear here</h2>
+            <p>No jersey information is shown before a search.</p>
           </div>
         ) : null}
 
