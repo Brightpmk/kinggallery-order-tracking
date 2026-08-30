@@ -8,11 +8,7 @@ type OrderCardProps = {
 };
 
 export function OrderCard({ order }: OrderCardProps) {
-  const hasDeliveryDetails =
-    order.orderStatus ||
-    order.deliveryMethod ||
-    order.shippingProvider ||
-    order.trackingNumber;
+  const hasDeliveryDetails = Boolean(order.orderStatus || order.deliveryMethod);
 
   return (
     <article className="order-card">
@@ -47,24 +43,9 @@ export function OrderCard({ order }: OrderCardProps) {
                 <dd>{getDeliveryMethodLabel(order.deliveryMethod)}</dd>
               </div>
             ) : null}
-            {order.deliveryMethod === "shipping" ? (
-              <>
-                <div>
-                  <dt>Shipping provider</dt>
-                  <dd>{order.shippingProvider ?? "Provider not available yet"}</dd>
-                </div>
-                <div>
-                  <dt>Tracking number</dt>
-                  <dd>
-                    {order.trackingNumber ?? "Tracking number not available yet"}
-                  </dd>
-                </div>
-              </>
-            ) : null}
           </dl>
         </section>
       ) : null}
-
     </article>
   );
 }
