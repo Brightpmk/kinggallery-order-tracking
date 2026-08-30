@@ -54,7 +54,7 @@ export function normalizePrintedName(value: string): string {
 }
 
 export function normalizeJerseyNumber(value: string): string {
-  return normalizeSpreadsheetIdentifier(value).trim();
+  return normalizeSpreadsheetIdentifier(value).replace(/\s+/g, "");
 }
 
 export function normalizeCustomerOrderSearch(

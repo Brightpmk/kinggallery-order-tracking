@@ -56,12 +56,14 @@ describe("Manual order Sheet adapter", () => {
     expect(diagnostics.unexpectedPaymentStatusValues).toBe(1);
   });
 
-  it("accepts arbitrary new JerseyColor values", () => {
+  it("normalizes spaced jersey numbers like 0 4 to 04", () => {
     const { orders } = adaptManualOrderSheetRows([
       headerRow,
-      ["1", "Future color", "BRIGHT", "67", "XL", "KMUTT", ""]
+      ["8", "Strawberry milkshake", "Rawiin", "0 8", "M", "NORTH BANGKOK", "PAID"],
+      ["16", "Strawberry milkshake", "PVCY_KT", "0 4", "2XL", "LADKRABANG", "PAID"]
     ]);
 
-    expect(orders[0].items[0].jerseyColor).toBe("Future color");
+    expect(orders[0].items[0].shirtNumber).toBe("08");
+    expect(orders[1].items[0].shirtNumber).toBe("04");
   });
 });

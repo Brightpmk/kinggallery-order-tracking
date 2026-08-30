@@ -288,6 +288,35 @@ describe("jersey order search", () => {
     );
   });
 
+  it("finds jerseys where the sheet has spaced numbers like 0 4 using standard input 04", () => {
+    const { orders } = adaptManualOrderSheetRows([
+      ["ORDER NUMBER", "COLOR", "NAME", "NUMBER", "SIZE", "UNIVERSITY", "PAYMENT STATUS"],
+      ["8", "Strawberry milkshake", "Rawiin", "0 8", "M", "NORTH BANGKOK", "PAID"],
+      ["16", "Strawberry milkshake", "PVCY_KT", "0 4", "2XL", "LADKRABANG", "PAID"]
+    ]);
+
+    const result04 = searchJerseyOrders(orders, {
+      printName: "PVCY_KT",
+      shirtNumber: "04"
+    });
+    expect(result04).toHaveLength(1);
+    expect(result04[0].items[0].shirtNumber).toBe("04");
+
+    const result08 = searchJerseyOrders(orders, {
+      printName: "rawiin",
+      shirtNumber: "08"
+    });
+    expect(result08).toHaveLength(1);
+    expect(result08[0].items[0].shirtNumber).toBe("08");
+
+    // Also works if customer types "0 4" with space
+    const resultWithSpace = searchJerseyOrders(orders, {
+      printName: "pvcy_kt",
+      shirtNumber: "0 4"
+    });
+    expect(resultWithSpace).toHaveLength(1);
+  });
+
   it("does not expose sensitive Sheet fields in public search results", () => {
     const { orders } = adaptGoogleFormSheetRows(buildFormRows());
     const result = searchCustomerOrders(orders, {

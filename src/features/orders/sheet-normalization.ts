@@ -68,7 +68,7 @@ export function normalizePrintedNameValue(value: SheetCellValue): string {
 }
 
 export function normalizeJerseyNumberValue(value: SheetCellValue): string {
-  return normalizeIdentifier(value).replace(/\s+/g, " ");
+  return normalizeIdentifier(value).replace(/\s+/g, "");
 }
 
 export function normalizeJerseyColorValue(value: SheetCellValue): string {
