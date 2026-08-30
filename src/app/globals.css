@@ -826,6 +826,12 @@ h3 {
   color: #6B5530;
 }
 
+.payment-status--pending {
+  background: rgba(201, 169, 110, 0.12);
+  border: 1px solid rgba(201, 169, 110, 0.25);
+  color: #8B7340;
+}
+
 .payment-status--unpaid {
   background: rgba(92, 20, 24, 0.08);
   border: 1px solid rgba(92, 20, 24, 0.16);

@@ -1,5 +1,6 @@
 import type { PublicOrderSummary } from "@/features/orders/types";
 import { getDeliveryMethodLabel } from "@/features/orders/jersey";
+import { getOrderStatusLabel } from "@/features/orders/order-status";
 import { OrderItemList } from "./OrderItemList";
 
 type OrderCardProps = {
@@ -8,7 +9,10 @@ type OrderCardProps = {
 
 export function OrderCard({ order }: OrderCardProps) {
   const hasDeliveryDetails =
-    order.deliveryMethod || order.shippingProvider || order.trackingNumber;
+    order.orderStatus ||
+    order.deliveryMethod ||
+    order.shippingProvider ||
+    order.trackingNumber;
 
   return (
     <article className="order-card">
@@ -31,6 +35,12 @@ export function OrderCard({ order }: OrderCardProps) {
         <section className="order-section" aria-label="Delivery details">
           <h3>Delivery</h3>
           <dl className="delivery-details">
+            {order.orderStatus ? (
+              <div>
+                <dt>Status</dt>
+                <dd>{getOrderStatusLabel(order.orderStatus)}</dd>
+              </div>
+            ) : null}
             {order.deliveryMethod ? (
               <div>
                 <dt>Method</dt>

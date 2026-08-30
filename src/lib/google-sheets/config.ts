@@ -8,12 +8,16 @@ export type GoogleSheetRangeConfig = {
 export type GoogleSheetsConfig = {
   formResponses: GoogleSheetRangeConfig;
   manualOrders: GoogleSheetRangeConfig;
+  websiteOrders: GoogleSheetRangeConfig;
+  websiteOrderItems: GoogleSheetRangeConfig;
   serviceAccountEmail: string;
   serviceAccountPrivateKey: string;
   cacheTtlMs: number;
 };
 
 const defaultFormResponsesRange = "'การตอบแบบฟอร์ม 1'!A:U";
+const defaultWebsiteOrdersRange = "Orders!A:Q";
+const defaultWebsiteOrderItemsRange = "OrderItems!A:H";
 const defaultCacheTtlMs = 60_000;
 
 export function getGoogleSheetsConfig(): GoogleSheetsConfig | null {
@@ -22,6 +26,9 @@ export function getGoogleSheetsConfig(): GoogleSheetsConfig | null {
     "GOOGLE_SHEETS_MANUAL_SPREADSHEET_ID"
   );
   const manualRange = readEnvValue("GOOGLE_SHEETS_MANUAL_RANGE");
+  const websiteOrdersSpreadsheetId = readEnvValue(
+    "GOOGLE_SHEETS_WEB_ORDERS_SPREADSHEET_ID"
+  );
   const serviceAccountEmail = readEnvValue("GOOGLE_SERVICE_ACCOUNT_EMAIL");
   const serviceAccountPrivateKey = readEnvValue(
     "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY"
@@ -31,6 +38,7 @@ export function getGoogleSheetsConfig(): GoogleSheetsConfig | null {
     !formSpreadsheetId ||
     !manualSpreadsheetId ||
     !manualRange ||
+    !websiteOrdersSpreadsheetId ||
     !serviceAccountEmail ||
     !serviceAccountPrivateKey
   ) {
@@ -47,6 +55,18 @@ export function getGoogleSheetsConfig(): GoogleSheetsConfig | null {
     manualOrders: {
       spreadsheetId: manualSpreadsheetId,
       range: manualRange
+    },
+    websiteOrders: {
+      spreadsheetId: websiteOrdersSpreadsheetId,
+      range:
+        readEnvValue("GOOGLE_SHEETS_WEB_ORDERS_RANGE") ??
+        defaultWebsiteOrdersRange
+    },
+    websiteOrderItems: {
+      spreadsheetId: websiteOrdersSpreadsheetId,
+      range:
+        readEnvValue("GOOGLE_SHEETS_WEB_ORDER_ITEMS_RANGE") ??
+        defaultWebsiteOrderItemsRange
     },
     serviceAccountEmail,
     serviceAccountPrivateKey: normalizePrivateKey(serviceAccountPrivateKey),

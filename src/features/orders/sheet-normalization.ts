@@ -5,14 +5,22 @@ import type { PaymentStatus } from "./types";
 export type AdapterDiagnostics = {
   skippedRows: number;
   malformedMultiJerseyEntries: number;
+  orphanOrderItems: number;
+  duplicateOrderIds: number;
+  ordersWithoutItems: number;
   unexpectedPaymentStatusValues: number;
+  unexpectedOrderStatusValues: number;
 };
 
 export function createInitialDiagnostics(): AdapterDiagnostics {
   return {
     skippedRows: 0,
     malformedMultiJerseyEntries: 0,
-    unexpectedPaymentStatusValues: 0
+    orphanOrderItems: 0,
+    duplicateOrderIds: 0,
+    ordersWithoutItems: 0,
+    unexpectedPaymentStatusValues: 0,
+    unexpectedOrderStatusValues: 0
   };
 }
 

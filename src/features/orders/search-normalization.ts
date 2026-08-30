@@ -36,6 +36,11 @@ export type NormalizedOrderSearch =
       searchMode: "jersey";
     } & NormalizedJerseyOrderSearch);
 
+const maxFullNameLength = 120;
+const maxPhoneNumberLength = 32;
+const maxPrintedNameLength = 60;
+const maxJerseyNumberLength = 12;
+
 export function normalizeFullName(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
@@ -55,6 +60,13 @@ export function normalizeJerseyNumber(value: string): string {
 export function normalizeCustomerOrderSearch(
   input: CustomerOrderSearchInput
 ): NormalizedCustomerOrderSearch | null {
+  if (
+    input.fullName.length > maxFullNameLength ||
+    input.phoneNumber.length > maxPhoneNumberLength
+  ) {
+    return null;
+  }
+
   const fullName = normalizeFullName(input.fullName);
   const phoneNumber = normalizePhoneNumber(input.phoneNumber);
 
@@ -71,6 +83,13 @@ export function normalizeCustomerOrderSearch(
 export function normalizeJerseyOrderSearch(
   input: JerseyOrderSearchInput
 ): NormalizedJerseyOrderSearch | null {
+  if (
+    input.printName.length > maxPrintedNameLength ||
+    input.shirtNumber.length > maxJerseyNumberLength
+  ) {
+    return null;
+  }
+
   const printName = normalizePrintedName(input.printName);
   const shirtNumber = normalizeJerseyNumber(input.shirtNumber);
 

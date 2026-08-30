@@ -2,19 +2,21 @@ import "server-only";
 
 import {
   readGoogleFormSheetRows,
-  readManualOrderSheetRows
+  readManualOrderSheetRows,
+  readWebsiteOrderItemSheetRows,
+  readWebsiteOrderSheetRows
 } from "@/lib/google-sheets/sheets-client";
 import { adaptGoogleFormSheetRows } from "./google-form-sheet-adapter";
 import { adaptManualOrderSheetRows } from "./manual-order-sheet-adapter";
-import type { OrderSheetSource } from "./order-source";
 import { searchJerseyOrders, searchOrders } from "./order-search";
 import type {
   JerseyOrderSearchInput,
   OrderSearchInput
 } from "./search-normalization";
 import { normalizeOrderSearch } from "./search-normalization";
-import { SheetSchemaError } from "./sheet-normalization";
-import type { OrderRecord, PublicOrderSummary } from "./types";
+import { SheetSchemaError, type AdapterDiagnostics } from "./sheet-normalization";
+import { adaptWebsiteOrderSheetRows } from "./website-order-sheet-adapter";
+import type { OrderRecord, OrderSource, PublicOrderSummary } from "./types";
 
 export type JerseyOrderLookupResult =
   | {
@@ -30,27 +32,34 @@ export type JerseyOrderLookupResult =
 const orderSheetSources = {
   googleForm: {
     name: "google_form",
-    readRows: readGoogleFormSheetRows,
-    adaptRows: adaptGoogleFormSheetRows
+    readOrders: async () =>
+      adaptGoogleFormSheetRows(await readGoogleFormSheetRows())
   },
   manualOrders: {
     name: "manual",
-    readRows: readManualOrderSheetRows,
-    adaptRows: adaptManualOrderSheetRows
+    readOrders: async () =>
+      adaptManualOrderSheetRows(await readManualOrderSheetRows())
+  },
+  websiteOrders: {
+    name: "website",
+    readOrders: async () => {
+      const [orderRows, orderItemRows] = await Promise.all([
+        readWebsiteOrderSheetRows(),
+        readWebsiteOrderItemSheetRows()
+      ]);
+
+      return adaptWebsiteOrderSheetRows(orderRows, orderItemRows);
+    }
   }
-} satisfies Record<
-  string,
-  OrderSheetSource & {
-    adaptRows: (rows: Awaited<ReturnType<OrderSheetSource["readRows"]>>) => {
-      orders: OrderRecord[];
-      diagnostics: {
-        skippedRows: number;
-        malformedMultiJerseyEntries: number;
-        unexpectedPaymentStatusValues: number;
-      };
-    };
-  }
->;
+} satisfies Record<string, NormalizedOrderSource>;
+
+type NormalizedOrderSource = {
+  name: OrderSource;
+  readOrders(): Promise<{
+    orders: OrderRecord[];
+    diagnostics: AdapterDiagnostics;
+  }>;
+};
 
 export async function findJerseyOrders(
   input: JerseyOrderSearchInput
@@ -95,10 +104,12 @@ export async function findOrders(
 }
 
 async function readAllNormalizedOrders(): Promise<OrderRecord[]> {
-  const [googleFormResult, manualOrdersResult] = await Promise.allSettled([
-    readSourceOrders(orderSheetSources.googleForm),
-    readSourceOrders(orderSheetSources.manualOrders)
-  ]);
+  const [googleFormResult, manualOrdersResult, websiteOrdersResult] =
+    await Promise.allSettled([
+      readSourceOrders(orderSheetSources.googleForm),
+      readSourceOrders(orderSheetSources.manualOrders),
+      readSourceOrders(orderSheetSources.websiteOrders)
+    ]);
 
   if (googleFormResult.status === "rejected") {
     throw new SheetSourceError("google_form", googleFormResult.reason);
@@ -108,25 +119,40 @@ async function readAllNormalizedOrders(): Promise<OrderRecord[]> {
     throw new SheetSourceError("manual", manualOrdersResult.reason);
   }
 
-  return [...googleFormResult.value, ...manualOrdersResult.value];
+  if (websiteOrdersResult.status === "rejected") {
+    throw new SheetSourceError("website", websiteOrdersResult.reason);
+  }
+
+  return [
+    ...googleFormResult.value,
+    ...manualOrdersResult.value,
+    ...websiteOrdersResult.value
+  ];
 }
 
 async function readSourceOrders(
-  source: (typeof orderSheetSources)[keyof typeof orderSheetSources]
+  source: NormalizedOrderSource
 ): Promise<OrderRecord[]> {
-  const rows = await source.readRows();
-  const { orders, diagnostics } = source.adaptRows(rows);
+  const { orders, diagnostics } = await source.readOrders();
 
   if (
     diagnostics.skippedRows > 0 ||
     diagnostics.malformedMultiJerseyEntries > 0 ||
-    diagnostics.unexpectedPaymentStatusValues > 0
+    diagnostics.orphanOrderItems > 0 ||
+    diagnostics.duplicateOrderIds > 0 ||
+    diagnostics.ordersWithoutItems > 0 ||
+    diagnostics.unexpectedPaymentStatusValues > 0 ||
+    diagnostics.unexpectedOrderStatusValues > 0
   ) {
     console.warn("Google Sheet lookup skipped or normalized source data.", {
       source: source.name,
       skippedRows: diagnostics.skippedRows,
       malformedMultiJerseyEntries: diagnostics.malformedMultiJerseyEntries,
-      unexpectedPaymentStatusValues: diagnostics.unexpectedPaymentStatusValues
+      orphanOrderItems: diagnostics.orphanOrderItems,
+      duplicateOrderIds: diagnostics.duplicateOrderIds,
+      ordersWithoutItems: diagnostics.ordersWithoutItems,
+      unexpectedPaymentStatusValues: diagnostics.unexpectedPaymentStatusValues,
+      unexpectedOrderStatusValues: diagnostics.unexpectedOrderStatusValues
     });
   }
 
@@ -165,7 +191,7 @@ function logOrderLookupError(error: unknown): void {
 
 class SheetSourceError extends Error {
   constructor(
-    public readonly source: "google_form" | "manual",
+    public readonly source: OrderSource,
     public override readonly cause: unknown
   ) {
     super(`Google Sheet source failed: ${source}`);

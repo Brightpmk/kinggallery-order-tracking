@@ -17,10 +17,10 @@ export function OrderItemList({ items }: OrderItemListProps) {
               <span className="quantity">x{item.quantity}</span>
             </div>
             <dl className="jersey-details">
-              <div>
-                <dt>Color</dt>
-                <dd>
-                  {item.jerseyColor ? (
+              {item.jerseyColor ? (
+                <div>
+                  <dt>Color</dt>
+                  <dd>
                     <span
                       className="color-value"
                       style={
@@ -31,34 +31,40 @@ export function OrderItemList({ items }: OrderItemListProps) {
                     >
                       {item.jerseyColor}
                     </span>
-                  ) : (
-                    "Not set"
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt>Size</dt>
-                <dd>{item.jerseySize ?? "Not set"}</dd>
-              </div>
-              <div>
-                <dt>Printed name</dt>
-                <dd>{item.printName ?? "Not set"}</dd>
-              </div>
-              <div>
-                <dt>Number</dt>
-                <dd>{item.shirtNumber ?? "Not set"}</dd>
-              </div>
-              <div>
-                <dt>University</dt>
-                <dd>{item.universityAbbreviation ?? "Not set"}</dd>
-              </div>
+                  </dd>
+                </div>
+              ) : null}
+              {item.jerseySize ? (
+                <div>
+                  <dt>Size</dt>
+                  <dd>{item.jerseySize}</dd>
+                </div>
+              ) : null}
+              {item.printName ? (
+                <div>
+                  <dt>Printed name</dt>
+                  <dd>{item.printName}</dd>
+                </div>
+              ) : null}
+              {item.shirtNumber ? (
+                <div>
+                  <dt>Number</dt>
+                  <dd>{item.shirtNumber}</dd>
+                </div>
+              ) : null}
+              {item.universityAbbreviation ? (
+                <div>
+                  <dt>University</dt>
+                  <dd>{item.universityAbbreviation}</dd>
+                </div>
+              ) : null}
               <div>
                 <dt>Payment</dt>
                 <dd>
                   <span
                     className={`payment-status payment-status--${item.paymentStatus}`}
                   >
-                    {item.paymentStatus === "paid" ? "Paid" : "Unpaid"}
+                    {getPaymentStatusLabel(item.paymentStatus)}
                   </span>
                 </dd>
               </div>
@@ -68,4 +74,16 @@ export function OrderItemList({ items }: OrderItemListProps) {
       ))}
     </ul>
   );
+}
+
+function getPaymentStatusLabel(status: PublicOrderItem["paymentStatus"]): string {
+  if (status === "paid") {
+    return "Paid";
+  }
+
+  if (status === "pending") {
+    return "Pending";
+  }
+
+  return "Unpaid";
 }
