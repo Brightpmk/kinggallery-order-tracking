@@ -76,7 +76,7 @@ a:hover {
 .app-shell {
   min-height: 100vh;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .silk-backdrop {
@@ -693,6 +693,7 @@ h3 {
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.03em;
+  overflow-wrap: anywhere;
 }
 
 .order-card h3 {
@@ -930,6 +931,7 @@ h3 {
   }
 
   .page {
+    animation: none;
     padding: 48px 0 64px;
   }
 }
@@ -942,7 +944,23 @@ h3 {
   }
 
   .tracking-form-panel {
+    background: rgba(255, 252, 248, 0.84);
     padding: 24px;
+  }
+
+  .order-card,
+  .empty-state {
+    background: rgba(255, 252, 248, 0.82);
+  }
+
+  .tracking-form fieldset {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-form button {
+    padding: 14px 18px;
+    font-size: 0.86rem;
+    letter-spacing: 0.08em;
   }
 
   h1 {
