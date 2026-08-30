@@ -2,11 +2,6 @@ import { describe, expect, it } from "vitest";
 import { adaptGoogleFormSheetRows, googleFormHeaders } from "./google-form-sheet-adapter";
 import { adaptManualOrderSheetRows } from "./manual-order-sheet-adapter";
 import { searchCustomerOrders, searchJerseyOrders, searchOrders } from "./order-search";
-import {
-  adaptWebsiteOrderSheetRows,
-  websiteOrderHeaders,
-  websiteOrderItemHeaders
-} from "./website-order-sheet-adapter";
 import type { OrderRecord } from "./types";
 
 const formHeaderRow = [
@@ -106,98 +101,6 @@ function buildManualRows() {
   ];
 }
 
-const websiteOrderHeaderRow = [
-  websiteOrderHeaders.orderId,
-  websiteOrderHeaders.createdAt,
-  websiteOrderHeaders.university,
-  websiteOrderHeaders.fullName,
-  websiteOrderHeaders.phone,
-  websiteOrderHeaders.deliveryMethod,
-  websiteOrderHeaders.shippingAddress,
-  websiteOrderHeaders.shippingFee,
-  websiteOrderHeaders.subtotal,
-  websiteOrderHeaders.total,
-  websiteOrderHeaders.paymentStatus,
-  websiteOrderHeaders.slipFileId,
-  websiteOrderHeaders.slipUrl,
-  websiteOrderHeaders.orderStatus,
-  websiteOrderHeaders.shippingProvider,
-  websiteOrderHeaders.trackingNumber,
-  websiteOrderHeaders.notes
-];
-
-const websiteItemHeaderRow = [
-  websiteOrderItemHeaders.orderId,
-  websiteOrderItemHeaders.itemId,
-  websiteOrderItemHeaders.productId,
-  websiteOrderItemHeaders.jerseyColor,
-  websiteOrderItemHeaders.size,
-  websiteOrderItemHeaders.quantity,
-  websiteOrderItemHeaders.unitPrice,
-  websiteOrderItemHeaders.lineTotal
-];
-
-function buildWebsiteOrderRows() {
-  return [
-    websiteOrderHeaderRow,
-    [
-      "KG-2026-WEB1",
-      "2026-08-29T10:00:00.000Z",
-      "BANGMOD",
-      "Private Customer",
-      "096-096-9594",
-      "SHIPPING",
-      "private website address",
-      50,
-      780,
-      830,
-      "PENDING",
-      "drive-file-website",
-      "https://drive.google.com/private-website-slip",
-      "NEW",
-      "EMS",
-      "",
-      "internal note"
-    ],
-    [
-      "KG-2026-WEB2",
-      "2026-08-30T10:00:00.000Z",
-      "BANGMOD",
-      "Private Customer",
-      "0960969594",
-      "PICKUP",
-      "",
-      0,
-      420,
-      420,
-      "PAID",
-      "",
-      "",
-      "CONFIRMED",
-      "",
-      "",
-      ""
-    ]
-  ];
-}
-
-function buildWebsiteItemRows() {
-  return [
-    websiteItemHeaderRow,
-    ["KG-2026-WEB1", "KG-2026-WEB1-01", "kg-web-matcha", "Matcha", "M", 2, 390, 780],
-    [
-      "KG-2026-WEB2",
-      "KG-2026-WEB2-01",
-      "kg-web-americano",
-      "Americano",
-      "L",
-      1,
-      420,
-      420
-    ]
-  ];
-}
-
 describe("jersey order search", () => {
   it("finds old Google Form orders by full customer name", () => {
     const { orders } = adaptGoogleFormSheetRows(buildFormRows());
@@ -208,36 +111,6 @@ describe("jersey order search", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].items).toHaveLength(2);
-  });
-
-  it("finds website orders by full customer name", () => {
-    const { orders } = adaptWebsiteOrderSheetRows(
-      buildWebsiteOrderRows(),
-      buildWebsiteItemRows()
-    );
-    const result = searchCustomerOrders(orders, {
-      fullName: " private   customer ",
-      phoneNumber: ""
-    });
-
-    expect(result).toHaveLength(2);
-    expect(result.map((order) => order.orderCode)).toEqual([
-      "KG-2026-WEB2",
-      "KG-2026-WEB1"
-    ]);
-  });
-
-  it("finds website orders by phone number", () => {
-    const { orders } = adaptWebsiteOrderSheetRows(
-      buildWebsiteOrderRows(),
-      buildWebsiteItemRows()
-    );
-    const result = searchCustomerOrders(orders, {
-      fullName: "",
-      phoneNumber: "096 096-9594"
-    });
-
-    expect(result).toHaveLength(2);
   });
 
   it("finds old Google Form orders by formatted phone number", () => {
@@ -339,41 +212,6 @@ describe("jersey order search", () => {
     expect(result[0].items).toHaveLength(2);
   });
 
-  it("searches customer mode across old and website sources without deduping", () => {
-    const formOrders = adaptGoogleFormSheetRows(buildFormRows()).orders;
-    const websiteOrders = adaptWebsiteOrderSheetRows(
-      buildWebsiteOrderRows(),
-      buildWebsiteItemRows()
-    ).orders;
-    const result = searchOrders([...formOrders, ...websiteOrders], {
-      searchMode: "customer",
-      fullName: "Private Customer",
-      phoneNumber: ""
-    });
-
-    expect(result.map((order) => order.orderCode)).toEqual([
-      "KG-2026-WEB2",
-      "KG-2026-WEB1",
-      formOrders[0].orderCode
-    ]);
-    expect(result.flatMap((order) => order.items)).toHaveLength(4);
-  });
-
-  it("excludes website orders from jersey search because they lack print data", () => {
-    const formOrders = adaptGoogleFormSheetRows(buildFormRows()).orders;
-    const websiteOrders = adaptWebsiteOrderSheetRows(
-      buildWebsiteOrderRows(),
-      buildWebsiteItemRows()
-    ).orders;
-    const result = searchJerseyOrders([...formOrders, ...websiteOrders], {
-      printName: "BRIGHT",
-      shirtNumber: "67"
-    });
-
-    expect(result).toHaveLength(1);
-    expect(result[0].orderCode).toBe(formOrders[0].orderCode);
-  });
-
   it("requires printed name and jersey number", () => {
     const orders = adaptManualOrderSheetRows(buildManualRows()).orders;
 
@@ -463,25 +301,5 @@ describe("jersey order search", () => {
     expect(serializedResult).not.toContain("private@example.com");
     expect(serializedResult).not.toContain("payment-slip");
     expect(serializedResult).not.toContain("private address");
-  });
-
-  it("does not expose sensitive website Sheet fields in customer search results", () => {
-    const { orders } = adaptWebsiteOrderSheetRows(
-      buildWebsiteOrderRows(),
-      buildWebsiteItemRows()
-    );
-    const result = searchCustomerOrders(orders, {
-      fullName: "Private Customer",
-      phoneNumber: ""
-    });
-    const serializedResult = JSON.stringify(result);
-
-    expect(serializedResult).not.toContain("0960969594");
-    expect(serializedResult).not.toContain("096-096-9594");
-    expect(serializedResult).not.toContain("private website address");
-    expect(serializedResult).not.toContain("drive-file-website");
-    expect(serializedResult).not.toContain("private-website-slip");
-    expect(serializedResult).not.toContain("internal note");
-    expect(serializedResult).not.toContain("kg-web-matcha");
   });
 });

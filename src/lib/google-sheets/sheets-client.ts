@@ -13,8 +13,6 @@ type CachedSheetRows = {
 
 let cachedFormRows: CachedSheetRows | null = null;
 let cachedManualRows: CachedSheetRows | null = null;
-let cachedWebsiteOrderRows: CachedSheetRows | null = null;
-let cachedWebsiteOrderItemRows: CachedSheetRows | null = null;
 
 export async function readGoogleFormSheetRows(): Promise<SheetRow[]> {
   return readConfiguredSheetRows("form", (config) => config.formResponses);
@@ -24,19 +22,8 @@ export async function readManualOrderSheetRows(): Promise<SheetRow[]> {
   return readConfiguredSheetRows("manual", (config) => config.manualOrders);
 }
 
-export async function readWebsiteOrderSheetRows(): Promise<SheetRow[]> {
-  return readConfiguredSheetRows("website_orders", (config) => config.websiteOrders);
-}
-
-export async function readWebsiteOrderItemSheetRows(): Promise<SheetRow[]> {
-  return readConfiguredSheetRows(
-    "website_order_items",
-    (config) => config.websiteOrderItems
-  );
-}
-
 async function readConfiguredSheetRows(
-  sourceName: "form" | "manual" | "website_orders" | "website_order_items",
+  sourceName: "form" | "manual",
   selectSheet: (
     config: NonNullable<ReturnType<typeof getGoogleSheetsConfig>>
   ) => GoogleSheetRangeConfig
@@ -83,25 +70,17 @@ async function readConfiguredSheetRows(
 }
 
 function getCachedRows(
-  sourceName: "form" | "manual" | "website_orders" | "website_order_items"
+  sourceName: "form" | "manual"
 ): CachedSheetRows | null {
   if (sourceName === "form") {
     return cachedFormRows;
   }
 
-  if (sourceName === "manual") {
-    return cachedManualRows;
-  }
-
-  if (sourceName === "website_orders") {
-    return cachedWebsiteOrderRows;
-  }
-
-  return cachedWebsiteOrderItemRows;
+  return cachedManualRows;
 }
 
 function setCachedRows(
-  sourceName: "form" | "manual" | "website_orders" | "website_order_items",
+  sourceName: "form" | "manual",
   rows: CachedSheetRows
 ): void {
   if (sourceName === "form") {
@@ -109,17 +88,7 @@ function setCachedRows(
     return;
   }
 
-  if (sourceName === "manual") {
-    cachedManualRows = rows;
-    return;
-  }
-
-  if (sourceName === "website_orders") {
-    cachedWebsiteOrderRows = rows;
-    return;
-  }
-
-  cachedWebsiteOrderItemRows = rows;
+  cachedManualRows = rows;
 }
 
 export class GoogleSheetsConfigError extends Error {

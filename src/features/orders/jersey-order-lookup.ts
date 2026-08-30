@@ -2,9 +2,7 @@ import "server-only";
 
 import {
   readGoogleFormSheetRows,
-  readManualOrderSheetRows,
-  readWebsiteOrderItemSheetRows,
-  readWebsiteOrderSheetRows
+  readManualOrderSheetRows
 } from "@/lib/google-sheets/sheets-client";
 import { adaptGoogleFormSheetRows } from "./google-form-sheet-adapter";
 import { adaptManualOrderSheetRows } from "./manual-order-sheet-adapter";
@@ -15,7 +13,6 @@ import type {
 } from "./search-normalization";
 import { normalizeOrderSearch } from "./search-normalization";
 import { SheetSchemaError, type AdapterDiagnostics } from "./sheet-normalization";
-import { adaptWebsiteOrderSheetRows } from "./website-order-sheet-adapter";
 import type { OrderRecord, OrderSource, PublicOrderSummary } from "./types";
 
 export type JerseyOrderLookupResult =
@@ -39,17 +36,6 @@ const orderSheetSources = {
     name: "manual",
     readOrders: async () =>
       adaptManualOrderSheetRows(await readManualOrderSheetRows())
-  },
-  websiteOrders: {
-    name: "website",
-    readOrders: async () => {
-      const [orderRows, orderItemRows] = await Promise.all([
-        readWebsiteOrderSheetRows(),
-        readWebsiteOrderItemSheetRows()
-      ]);
-
-      return adaptWebsiteOrderSheetRows(orderRows, orderItemRows);
-    }
   }
 } satisfies Record<string, NormalizedOrderSource>;
 
@@ -104,11 +90,10 @@ export async function findOrders(
 }
 
 async function readAllNormalizedOrders(): Promise<OrderRecord[]> {
-  const [googleFormResult, manualOrdersResult, websiteOrdersResult] =
+  const [googleFormResult, manualOrdersResult] =
     await Promise.allSettled([
       readSourceOrders(orderSheetSources.googleForm),
-      readSourceOrders(orderSheetSources.manualOrders),
-      readSourceOrders(orderSheetSources.websiteOrders)
+      readSourceOrders(orderSheetSources.manualOrders)
     ]);
 
   if (googleFormResult.status === "rejected") {
@@ -119,14 +104,9 @@ async function readAllNormalizedOrders(): Promise<OrderRecord[]> {
     throw new SheetSourceError("manual", manualOrdersResult.reason);
   }
 
-  if (websiteOrdersResult.status === "rejected") {
-    throw new SheetSourceError("website", websiteOrdersResult.reason);
-  }
-
   return [
     ...googleFormResult.value,
-    ...manualOrdersResult.value,
-    ...websiteOrdersResult.value
+    ...manualOrdersResult.value
   ];
 }
 
@@ -138,21 +118,13 @@ async function readSourceOrders(
   if (
     diagnostics.skippedRows > 0 ||
     diagnostics.malformedMultiJerseyEntries > 0 ||
-    diagnostics.orphanOrderItems > 0 ||
-    diagnostics.duplicateOrderIds > 0 ||
-    diagnostics.ordersWithoutItems > 0 ||
-    diagnostics.unexpectedPaymentStatusValues > 0 ||
-    diagnostics.unexpectedOrderStatusValues > 0
+    diagnostics.unexpectedPaymentStatusValues > 0
   ) {
     console.warn("Google Sheet lookup skipped or normalized source data.", {
       source: source.name,
       skippedRows: diagnostics.skippedRows,
       malformedMultiJerseyEntries: diagnostics.malformedMultiJerseyEntries,
-      orphanOrderItems: diagnostics.orphanOrderItems,
-      duplicateOrderIds: diagnostics.duplicateOrderIds,
-      ordersWithoutItems: diagnostics.ordersWithoutItems,
-      unexpectedPaymentStatusValues: diagnostics.unexpectedPaymentStatusValues,
-      unexpectedOrderStatusValues: diagnostics.unexpectedOrderStatusValues
+      unexpectedPaymentStatusValues: diagnostics.unexpectedPaymentStatusValues
     });
   }
 

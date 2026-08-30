@@ -1,6 +1,6 @@
 import type { DeliveryMethod, JerseyColor, JerseySize } from "./jersey";
 
-export type OrderSource = "google_form" | "line" | "manual" | "website";
+export type OrderSource = "google_form" | "line" | "manual";
 
 export type PaymentStatus = "paid" | "pending" | "unpaid";
 
