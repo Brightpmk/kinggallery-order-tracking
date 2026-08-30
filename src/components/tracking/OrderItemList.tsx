@@ -1,6 +1,4 @@
 import type { PublicOrderItem } from "@/features/orders/types";
-import { getJerseyColorSwatch } from "@/features/orders/jersey";
-import type { CSSProperties } from "react";
 
 type OrderItemListProps = {
   items: PublicOrderItem[];
@@ -20,18 +18,7 @@ export function OrderItemList({ items }: OrderItemListProps) {
               {item.jerseyColor ? (
                 <div>
                   <dt>Color</dt>
-                  <dd>
-                    <span
-                      className="color-value"
-                      style={
-                        {
-                          "--swatch-color": getJerseyColorSwatch(item.jerseyColor)
-                        } as CSSProperties
-                      }
-                    >
-                      {item.jerseyColor}
-                    </span>
-                  </dd>
+                  <dd>{item.jerseyColor}</dd>
                 </div>
               ) : null}
               {item.jerseySize ? (

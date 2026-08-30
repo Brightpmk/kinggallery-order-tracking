@@ -792,23 +792,6 @@ h3 {
   overflow-wrap: anywhere;
 }
 
-/* ── Color Swatch ── */
-.color-value {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.color-value::before {
-  width: 14px;
-  height: 14px;
-  border: 1.5px solid rgba(58, 34, 38, 0.15);
-  border-radius: var(--radius-pill);
-  background: var(--swatch-color);
-  content: "";
-  flex: 0 0 auto;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-}
 
 .payment-status {
   display: inline-flex;
